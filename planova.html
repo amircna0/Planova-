@@ -1,0 +1,1993 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Planova — plan your year, achieve your vision</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600;700&display=swap');
+
+:root{
+  /* the mesh behind the glass — softened for readability */
+  --bg: rgba(255,255,255,0.55);
+  --surface: rgba(255,255,255,0.72);
+  --border: rgba(20,22,46,0.08);
+  --glass-edge: rgba(255,255,255,0.8);
+  --ink: #23253F;
+  --ink-soft: rgba(35,37,63,0.72);
+  --ink-faint: rgba(35,37,63,0.52);
+
+  /* soft periwinkle — the one accent, dialed down */
+  --primary: #6C7CF0;
+  --primary-dark: #4E5CD6;
+  --primary-soft: rgba(108,124,240,0.13);
+
+  --blue: #4FA3F7;   --blue-soft:rgba(79,163,247,0.13);
+  --pink: #F16DA0;   --pink-soft:rgba(241,109,160,0.13);
+  --green: #4ECB82;  --green-soft:rgba(78,203,130,0.14);
+  --amber: #F4B740;  --amber-soft:rgba(244,183,64,0.16);
+  --purple:#B27EE8;  --purple-soft:rgba(178,126,232,0.14);
+  --red:   #F17164;  --red-soft:rgba(241,113,100,0.13);
+
+  --radius-lg: 28px;
+  --radius-md: 20px;
+  --radius-sm: 14px;
+  --shadow: 0 8px 26px rgba(60,70,150,0.08), inset 0 1px 0 rgba(255,255,255,0.65);
+  --shadow-lift: 0 18px 42px rgba(60,70,150,0.13), inset 0 1px 0 rgba(255,255,255,0.75);
+}
+*{ box-sizing:border-box; }
+@media (prefers-reduced-motion: reduce){ *{ animation-duration:0.001ms !important; transition-duration:0.001ms !important; } }
+
+body{
+  margin:0; color: var(--ink);
+  font-family:'Inter', sans-serif; -webkit-font-smoothing: antialiased;
+  min-height:100vh;
+  background-color:#F7F8FD;
+  background-image:
+    radial-gradient(circle at 12% 15%, rgba(108,124,240,0.22) 0%, transparent 52%),
+    radial-gradient(circle at 88% 12%, rgba(241,109,160,0.16) 0%, transparent 50%),
+    radial-gradient(circle at 18% 90%, rgba(79,163,247,0.18) 0%, transparent 52%),
+    radial-gradient(circle at 92% 85%, rgba(178,126,232,0.16) 0%, transparent 50%),
+    linear-gradient(160deg, #FAFAFE 0%, #FDF9FC 100%);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+}
+h1,h2,h3{ font-family:'Manrope', sans-serif; margin:0; font-weight:700; letter-spacing:-0.015em; }
+button, input, textarea{ font-family: inherit; }
+::-webkit-scrollbar{ width:8px; height:8px; }
+::-webkit-scrollbar-thumb{ background: rgba(20,22,46,0.16); border-radius: 8px; }
+
+/* numeric / data typography */
+.ring-pct, .stat-num, .date-badge .d, .mini-icon-circle, .priority-num,
+.bar-pct, .budget-amt, .month-chip-val, .habit-dot[data-done="true"]{
+  font-family:'IBM Plex Mono', monospace;
+}
+
+/* every frosted surface gets the same refraction */
+.card, .date-nav, .icon-btn, .bell-btn, .tile, .quote-card, .sidebar,
+.goal-card, .note-card, .month-chip, .cal-cell, .habit-emoji,
+.mini-add input, .mini-add select, textarea.plain{
+  backdrop-filter: blur(22px) saturate(180%);
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+}
+
+/* ---------------- App shell ---------------- */
+.app{ display:grid; grid-template-columns: 258px 1fr; min-height:100vh; }
+@media (max-width: 880px){ .app{ grid-template-columns: 1fr; } .sidebar{ position: static; height:auto; margin:12px; } }
+
+.sidebar{
+  background: linear-gradient(190deg, rgba(255,255,255,0.75), rgba(255,255,255,0.55));
+  border:1px solid var(--glass-edge);
+  padding: 22px 14px; display:flex; flex-direction:column; gap:22px;
+  position: sticky; top:16px; height:calc(100vh - 32px);
+  margin: 16px 0 16px 16px;
+  border-radius: var(--radius-lg);
+  overflow-y:auto;
+  color: var(--ink);
+  box-shadow: 0 16px 40px rgba(60,70,150,0.10), inset 0 1px 0 rgba(255,255,255,0.7);
+}
+.brand{ display:flex; align-items:center; gap:11px; padding: 4px 8px 16px; border-bottom:1px solid var(--border); }
+.brand-mark{
+  width:34px; height:34px; border-radius:50%; flex-shrink:0; position:relative;
+  background: radial-gradient(circle at 32% 28%, #ffffff 0%, #DCE1FC 20%, var(--primary) 58%, var(--primary-dark) 100%);
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.6) inset, 0 4px 12px rgba(108,124,240,0.35);
+}
+.brand-mark::after{ content:''; position:absolute; top:5px; left:7px; width:9px; height:6px; border-radius:50%; background:rgba(255,255,255,0.9); filter:blur(1px); }
+.brand-name{ font-family:'Manrope', sans-serif; font-weight:800; font-size:19px; letter-spacing:-0.02em; color:var(--ink); }
+
+.nav-group{ display:flex; flex-direction:column; gap:3px; }
+.nav-item{
+  display:flex; align-items:center; gap:11px; padding: 10px 12px; border-radius: var(--radius-sm);
+  color: var(--ink-soft); font-size:13.5px; font-weight:600; cursor:pointer; border:1px solid transparent; background:transparent;
+  text-align:left; width:100%; transition: all 0.15s ease;
+}
+.nav-item svg{ width:18px; height:18px; flex-shrink:0; }
+.nav-item:hover{ background: rgba(255,255,255,0.6); color: var(--ink); }
+.nav-item[data-active="true"]{ background: rgba(255,255,255,0.85); color: var(--primary-dark); border-color: var(--glass-edge); box-shadow: inset 0 1px 0 rgba(255,255,255,0.8), 0 4px 12px rgba(108,124,240,0.16); }
+.nav-item:focus-visible{ outline:2px solid var(--primary); outline-offset:1px; }
+.nav-divider{ height:1px; background: var(--border); margin: 8px 4px; }
+
+.sidebar-spacer{ flex:1; }
+.profile-card{ display:flex; align-items:center; gap:10px; padding:10px; border-radius: var(--radius-sm); border:1px solid var(--glass-edge); background:rgba(255,255,255,0.5); }
+.avatar{ width:34px; height:34px; border-radius:50%; background: radial-gradient(circle at 32% 28%, #fff, var(--primary) 65%); display:flex; align-items:center; justify-content:center; color:#fff; font-weight:700; font-size:13px; flex-shrink:0; font-family:'IBM Plex Mono',monospace; }
+.profile-name{ font-size:13px; font-weight:700; line-height:1.3; color:var(--ink); }
+.profile-email{ font-size:11px; color: var(--ink-faint); }
+
+/* ---------------- Main ---------------- */
+.main{ padding: 30px 34px 60px; max-width: 1180px; }
+.topbar{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:26px; gap:16px; flex-wrap:wrap; }
+.page-title{ font-size: 30px; font-weight:800; margin-bottom:5px; position:relative; display:inline-block; color:var(--ink); }
+.page-title::after{ content:''; position:absolute; left:1px; bottom:-6px; width:34px; height:3px; border-radius:3px; background:linear-gradient(90deg, var(--primary), var(--pink)); }
+.page-sub{ font-size:14px; color: var(--ink-soft); margin:10px 0 0; }
+.topbar-actions{ display:flex; align-items:center; gap:12px; }
+.date-nav{ display:flex; align-items:center; gap:10px; background:var(--surface); border:1px solid var(--glass-edge); border-radius:999px; padding:6px 8px; box-shadow: var(--shadow); }
+.icon-btn{ width:28px; height:28px; border-radius:50%; border:1px solid var(--glass-edge); background:var(--surface); display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--ink-soft); transition:all .15s ease; }
+.icon-btn:hover{ background:var(--primary); color:#fff; border-color:var(--primary); }
+.icon-btn svg{ width:14px; height:14px; }
+.date-nav-label{ font-weight:700; font-size:13px; min-width:52px; text-align:center; font-family:'IBM Plex Mono',monospace; }
+.bell-btn{ width:38px; height:38px; border-radius:50%; background:var(--surface); border:1px solid var(--glass-edge); display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--ink-soft); box-shadow:var(--shadow); }
+.bell-btn svg{ width:17px; height:17px; }
+
+.card{ background:var(--surface); border:1px solid var(--glass-edge); border-radius: var(--radius-lg); padding:22px; box-shadow: var(--shadow); position:relative; overflow:hidden; }
+.card::before{ content:''; position:absolute; top:0; left:0; right:0; height:1px; background:linear-gradient(90deg, transparent, rgba(255,255,255,0.9), transparent); }
+.card-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+.card-title{ font-size:13px; font-weight:700; font-family:'Manrope',sans-serif; text-transform:uppercase; letter-spacing:0.05em; color:var(--ink-soft); }
+.link-btn{ border:none; background:none; color:var(--primary); font-size:12px; font-weight:700; cursor:pointer; }
+.link-btn:hover{ text-decoration:underline; }
+.link-btn[data-primary="true"]{ background:var(--ink); border:1px solid var(--ink); color:#fff; border-radius:10px; padding:8px 10px; }
+
+.grid{ display:grid; gap:18px; }
+.grid-2{ grid-template-columns: 1fr 1fr; }
+.grid-3{ grid-template-columns: repeat(3,1fr); }
+@media (max-width: 900px){ .grid-2, .grid-3{ grid-template-columns:1fr; } }
+
+.view{ display:none; } .view[data-active="true"]{ display:block; }
+
+/* progress ring */
+.ring-box{ display:flex; align-items:center; gap:22px; }
+.ring-wrap{ position:relative; width:104px; height:104px; flex-shrink:0; }
+.ring-wrap svg{ transform:rotate(-90deg); }
+.ring-track{ fill:none; stroke:var(--border); stroke-width:9; }
+.ring-fill{ fill:none; stroke:var(--primary); stroke-width:9; stroke-linecap:round; transition: stroke-dashoffset .6s cubic-bezier(.4,0,.2,1); }
+.ring-center{ position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+.ring-pct{ font-size:21px; font-weight:700; }
+.ring-caption{ font-size:9.5px; color:var(--ink-faint); font-weight:600; text-transform:uppercase; letter-spacing:0.05em; }
+.stat-cols{ display:flex; gap:22px; flex-wrap:wrap; }
+.stat-col{ display:flex; flex-direction:column; gap:2px; }
+.stat-num{ font-size:18px; font-weight:700; }
+.stat-label{ font-size:11px; color:var(--ink-faint); font-weight:600; }
+
+/* goal / life-area cards */
+.goal-card{ background:var(--bg); border-radius: var(--radius-md); padding:14px; position:relative; border:1px solid var(--glass-edge); transition:all .15s ease; box-shadow: inset 0 1px 0 rgba(255,255,255,0.4); }
+.goal-card:hover{ border-color:rgba(255,255,255,0.85); transform: translateY(-1px); }
+.goal-icon{ width:34px; height:34px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:16px; margin-bottom:10px; }
+.goal-title{ font-size:13px; font-weight:700; margin-bottom:10px; }
+.bar-track{ height:6px; background:var(--border); border-radius:999px; overflow:hidden; }
+.bar-fill{ height:100%; border-radius:999px; transition: width .4s ease; background-image: linear-gradient(90deg, rgba(255,255,255,0.18), transparent); }
+.bar-row{ display:flex; align-items:center; justify-content:space-between; margin-top:6px; }
+.bar-pct{ font-size:11px; font-weight:700; color:var(--ink-soft); }
+.stepper{ display:flex; gap:4px; opacity:0; transition:opacity .15s ease; }
+.goal-card:hover .stepper, .area-row:hover .stepper{ opacity:1; }
+.step-btn{ width:18px; height:18px; border-radius:5px; border:1px solid var(--border); background:var(--surface); cursor:pointer; font-size:11px; line-height:1; display:flex; align-items:center; justify-content:center; color:var(--ink-soft); }
+.step-btn:hover{ background:var(--ink); color:#F6F4E9; }
+.goal-del{ position:absolute; top:10px; right:10px; border:none; background:none; color:var(--ink-faint); cursor:pointer; opacity:0; font-size:12px; }
+.goal-card:hover .goal-del{ opacity:1; }
+.goal-del:hover{ color:var(--red); }
+.goal-actions{ display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+.goal-actions .link-btn{ background:var(--surface); border:1px solid var(--glass-edge); border-radius:10px; padding:7px 9px; text-decoration:none; }
+.roadmap-meta{ display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-top:10px; }
+.roadmap-pill{ background:var(--surface); border:1px solid var(--glass-edge); border-radius:10px; padding:7px 6px; min-width:0; }
+.roadmap-pill strong{ display:block; font-size:13px; color:var(--ink); }
+.roadmap-pill span{ display:block; font-size:10px; color:var(--ink-faint); font-weight:700; }
+.roadmap-panel{ display:flex; flex-direction:column; gap:12px; }
+.roadmap-item{ border:1px solid var(--glass-edge); border-radius:var(--radius-md); padding:12px; background:rgba(255,255,255,0.48); }
+.roadmap-week{ margin-top:10px; padding-top:10px; border-top:1px solid var(--border); }
+.roadmap-task{ display:flex; align-items:center; gap:8px; padding:6px 0; font-size:12px; font-weight:600; }
+.roadmap-task-dot{ width:7px; height:7px; border-radius:50%; background:var(--primary); flex-shrink:0; }
+.plan-feature-list{ display:flex; flex-direction:column; gap:7px; margin:12px 0; }
+.plan-feature-list div{ font-size:12px; color:var(--ink-soft); font-weight:600; }
+.plan-feature-list div::before{ content:'✓'; color:var(--green); margin-right:7px; font-weight:800; }
+
+/* months overview */
+.months-row{ display:grid; grid-template-columns: repeat(6,1fr); gap:10px; }
+@media (max-width:760px){ .months-row{ grid-template-columns: repeat(3,1fr); } }
+.month-chip{ border:1px solid var(--glass-edge); background:var(--bg); border-radius:16px; padding:10px 6px; text-align:center; cursor:pointer; transition:all .15s ease; }
+.month-chip:hover{ transform: translateY(-2px); box-shadow: var(--shadow); }
+.month-chip[data-current="true"]{ border-color:var(--primary); background:var(--primary-soft); }
+.month-chip-name{ font-size:12px; font-weight:700; margin-bottom:4px; font-family:'Manrope',sans-serif; }
+.month-chip-val{ font-size:11px; color:var(--ink-faint); font-weight:600; }
+.month-chip-val[data-done="true"]{ color:var(--green); }
+
+/* life areas */
+.area-row{ display:flex; align-items:center; gap:12px; padding:8px 0; }
+.area-dot{ width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+.area-name{ width:118px; font-size:13px; font-weight:600; flex-shrink:0; }
+.area-track{ flex:1; }
+
+/* important dates */
+.date-row{ display:flex; gap:12px; align-items:center; padding:9px 0; border-bottom:1px solid var(--border); }
+.date-row:last-child{ border-bottom:none; }
+.date-badge{ width:42px; flex-shrink:0; text-align:center; background:linear-gradient(160deg, var(--primary), var(--primary-dark)); border-radius:12px; padding:5px 0; box-shadow:0 4px 12px rgba(108,124,240,0.28); }
+.date-badge .d{ font-size:14px; font-weight:700; line-height:1.1; color:#fff; }
+.date-badge .m{ font-size:9px; color:rgba(255,255,255,0.75); font-weight:700; text-transform:uppercase; }
+.date-title{ font-size:13px; font-weight:600; }
+.date-sub{ font-size:11px; color:var(--ink-faint); }
+.date-del{ margin-left:auto; border:none; background:none; color:var(--ink-faint); cursor:pointer; opacity:0; }
+.date-row:hover .date-del{ opacity:1; }
+
+/* quote card — a droplet of light on the glass */
+.quote-card{ background: linear-gradient(160deg, rgba(255,255,255,0.65), rgba(255,255,255,0.4)); border-color: var(--glass-edge); position:relative; overflow:hidden; }
+.quote-card::before{ content:''; position:absolute; top:-40px; right:-40px; width:140px; height:140px; border-radius:50%; background:radial-gradient(circle at 35% 30%, rgba(108,124,240,0.28), transparent 70%); filter:blur(2px); }
+.quote-card::after{ content:''; position:absolute; bottom:-30px; left:-30px; width:90px; height:90px; border-radius:50%; background:radial-gradient(circle at 40% 30%, rgba(241,109,160,0.22), transparent 70%); filter:blur(2px); }
+.quote-text{ font-family:'Manrope', sans-serif; font-size:18px; font-weight:600; line-height:1.45; color:var(--ink); border:none; background:transparent; width:100%; resize:none; outline:none; position:relative; }
+.quote-mark{ font-family:'Manrope',sans-serif; font-size:34px; font-weight:800; color:var(--primary); line-height:1; margin-bottom:2px; position:relative; }
+
+/* small forms */
+.mini-add{ display:flex; gap:8px; }
+.mini-add input, .mini-add select{ flex:1; border:1px solid var(--glass-edge); border-radius:12px; padding:9px 11px; font-size:13px; outline:none; background:var(--bg); color:var(--ink); }
+.mini-add input:focus, .mini-add select:focus{ border-color:var(--primary); box-shadow:0 0 0 3px var(--primary-soft); }
+.mini-add button{ border:none; background:linear-gradient(160deg, var(--primary), var(--primary-dark)); color:#fff; border-radius:12px; padding:0 14px; cursor:pointer; font-weight:700; transition:all .15s ease; box-shadow:0 4px 12px rgba(108,124,240,0.28); }
+.mini-add button:hover{ transform:translateY(-1px); box-shadow:0 6px 16px rgba(108,124,240,0.35); }
+
+/* calendar (monthly) */
+.month-layout{ display:grid; grid-template-columns: 1.5fr 1fr; gap:20px; align-items:start; }
+@media (max-width:980px){ .month-layout{ grid-template-columns:1fr; } }
+.weekday-row{ display:grid; grid-template-columns:repeat(7,1fr); margin-bottom:8px; }
+.weekday-row span{ font-size:11px; font-weight:700; color:var(--ink-faint); text-align:center; text-transform:uppercase; }
+.cal-grid{ display:grid; grid-template-columns:repeat(7,1fr); gap:6px; }
+.cal-cell{ aspect-ratio:1/0.82; border-radius:14px; border:1px solid transparent; background:var(--bg); cursor:pointer; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; transition:all .12s ease; font-weight:700; font-size:13px; color:var(--ink); position:relative; font-family:'IBM Plex Mono',monospace; }
+.cal-cell:hover{ border-color:var(--glass-edge); }
+.cal-cell[data-muted="true"]{ opacity:0.32; }
+.cal-cell[data-selected="true"]{ background:linear-gradient(160deg, var(--primary), var(--primary-dark)); color:#fff; box-shadow:0 4px 14px rgba(108,124,240,0.3); }
+.cal-cell[data-today="true"]:not([data-selected="true"]){ border-color:var(--primary); color:var(--primary-dark); background:var(--primary-soft); }
+.cal-dot{ position:absolute; bottom:5px; width:5px; height:5px; border-radius:50%; background:currentColor; opacity:0.6; }
+
+.priority-item{ display:flex; align-items:center; gap:10px; padding:8px 0; }
+.priority-num{ width:20px; height:20px; border-radius:50%; color:#fff; font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.priority-text{ font-size:13px; font-weight:600; flex:1; }
+.priority-text[data-done="true"]{ text-decoration:line-through; color:var(--ink-faint); }
+.pcheck{ width:16px; height:16px; border-radius:50%; border:2px solid var(--ink-faint); background:transparent; cursor:pointer; flex-shrink:0; }
+.pcheck[data-done="true"]{ background:var(--green); border-color:var(--green); }
+
+.progress-line{ display:flex; align-items:center; justify-content:space-between; font-size:13px; font-weight:700; margin-bottom:6px; }
+.mini-icon-row{ display:flex; gap:14px; flex-wrap:wrap; }
+.mini-icon{ display:flex; flex-direction:column; align-items:center; gap:6px; width:56px; }
+.mini-icon-circle{ width:42px; height:42px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:700; position:relative; border:1px solid var(--glass-edge); box-shadow: inset 0 1px 0 rgba(255,255,255,0.5); }
+.mini-icon-pct{ font-size:10px; font-weight:700; color:var(--ink-soft); }
+.mini-icon-name{ font-size:9px; color:var(--ink-faint); font-weight:600; text-align:center; }
+
+/* habit tracker grid */
+.habit-table{ width:100%; border-collapse:collapse; }
+.habit-table th{ font-size:10px; color:var(--ink-faint); font-weight:700; text-transform:uppercase; padding-bottom:8px; letter-spacing:0.04em; }
+.habit-table td{ padding: 6px 4px; text-align:center; }
+.habit-name-cell{ display:flex; align-items:center; gap:8px; text-align:left; font-size:13px; font-weight:600; }
+.habit-emoji{ width:26px; height:26px; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:13px; flex-shrink:0; background:var(--bg); border:1px solid var(--glass-edge); }
+.habit-dot{ width:20px; height:20px; border-radius:50%; border:1.5px solid var(--glass-edge); background:var(--surface); cursor:pointer; margin:0 auto; transition:all .12s ease; }
+.habit-dot[data-done="true"]{ background:linear-gradient(160deg,#8CE0AC,var(--green)); border-color:var(--green); box-shadow:0 3px 10px rgba(78,203,130,0.35); }
+.habit-del{ border:none; background:none; color:var(--ink-faint); cursor:pointer; opacity:0; }
+tr:hover .habit-del{ opacity:1; }
+
+/* schedule (daily) */
+.sched-row{ display:flex; gap:12px; align-items:flex-start; padding:10px 0; border-bottom:1px solid var(--border); }
+.sched-row:last-child{ border-bottom:none; }
+.sched-time{ width:64px; flex-shrink:0; font-size:11px; font-weight:700; color:var(--ink-faint); padding-top:2px; font-family:'IBM Plex Mono',monospace; }
+.sched-bar{ width:3px; align-self:stretch; border-radius:3px; flex-shrink:0; }
+.sched-label{ font-size:13px; font-weight:600; flex:1; }
+.sched-del{ border:none; background:none; color:var(--ink-faint); cursor:pointer; opacity:0; }
+.sched-row:hover .sched-del{ opacity:1; }
+
+/* notes / list items */
+.note-card{ background:var(--bg); border-radius: var(--radius-md); padding:12px 14px; position:relative; border:1px solid var(--glass-edge); }
+.note-txt{ font-size:13px; font-weight:500; line-height:1.5; white-space:pre-wrap; }
+.note-meta{ font-size:10px; color:var(--ink-faint); margin-top:6px; font-weight:600; }
+.note-del{ position:absolute; top:10px; right:10px; border:none; background:none; color:var(--ink-faint); cursor:pointer; opacity:0; }
+.note-card:hover .note-del{ opacity:1; }
+
+/* empty state */
+.empty{ border:1.5px dashed rgba(20,22,46,0.18); border-radius: var(--radius-md); padding:26px 14px; text-align:center; color:var(--ink-faint); font-size:13px; background:rgba(255,255,255,0.2); }
+
+/* quick tiles (home) */
+.tile{ display:flex; flex-direction:column; gap:10px; padding:18px; border-radius: var(--radius-lg); cursor:pointer; border:1px solid var(--glass-edge); background:var(--surface); transition: all .15s ease; }
+.tile:hover{ transform: translateY(-3px); box-shadow: var(--shadow-lift); border-color:rgba(255,255,255,0.9); }
+.tile-icon{ width:38px; height:38px; border-radius:13px; display:flex; align-items:center; justify-content:center; box-shadow: inset 0 1px 0 rgba(255,255,255,0.5); }
+.tile-icon svg{ width:18px; height:18px; }
+.tile-title{ font-size:14px; font-weight:700; font-family:'Manrope',sans-serif; }
+.tile-sub{ font-size:11px; color:var(--ink-faint); }
+
+textarea.plain{ width:100%; border:1px solid var(--glass-edge); border-radius:12px; padding:10px; font-size:13px; outline:none; resize:vertical; min-height:70px; background:var(--bg); color:var(--ink); }
+textarea.plain:focus{ border-color:var(--primary); box-shadow:0 0 0 3px var(--primary-soft); }
+.edit-toggle{ border:none; background:none; color:var(--primary-dark); font-size:12px; font-weight:700; cursor:pointer; }
+
+.budget-amt{ font-size:28px; font-weight:800; font-family:'Manrope',sans-serif; }
+.budget-of{ font-size:12px; color:var(--ink-faint); font-weight:600; }
+.expense-row{ display:flex; justify-content:space-between; align-items:center; font-size:13px; padding:7px 0; border-bottom:1px solid var(--border); }
+.expense-row:last-child{ border-bottom:none; }
+.expense-del{ border:none;background:none;color:var(--ink-faint);cursor:pointer;opacity:0; }
+.expense-row:hover .expense-del{ opacity:1; }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="brand"><div class="brand-mark">✦</div><div class="brand-name">Planova</div></div>
+    <nav class="nav-group" id="navGroup">
+      <button class="nav-item" data-view="home" data-active="true">${ICON.home}Home</button>
+      <button class="nav-item" data-view="annual">${ICON.annual}Annual</button>
+      <button class="nav-item" data-view="monthly">${ICON.monthly}Monthly</button>
+      <button class="nav-item" data-view="daily">${ICON.daily}Daily</button>
+      <button class="nav-item" data-view="goals">${ICON.goals}Goals</button>
+      <button class="nav-item" data-view="habits">${ICON.habits}Habits</button>
+      <button class="nav-item" data-view="finances">${ICON.finances}Finances</button>
+      <button class="nav-item" data-view="notes">${ICON.notes}Notes</button>
+      <div class="nav-divider"></div>
+      <button class="nav-item" data-view="monthly">${ICON.calendar}Calendar</button>
+      <button class="nav-item" data-view="templates">${ICON.templates}Templates</button>
+    </nav>
+    <div class="sidebar-spacer"></div>
+    <div class="profile-card">
+      <div class="avatar">AN</div>
+      <div><div class="profile-name">Alex Noor</div><div class="profile-email">alex@planova.app</div></div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <p class="page-title" id="pageTitle">Home</p>
+        <p class="page-sub" id="pageSub">Welcome back — here's where things stand.</p>
+      </div>
+      <div class="topbar-actions" id="topbarActions"></div>
+    </div>
+
+    <!-- HOME -->
+    <section class="view" data-active="true" id="view-home"></section>
+    <!-- ANNUAL -->
+    <section class="view" id="view-annual"></section>
+    <!-- MONTHLY -->
+    <section class="view" id="view-monthly"></section>
+    <!-- DAILY -->
+    <section class="view" id="view-daily"></section>
+    <!-- GOALS -->
+    <section class="view" id="view-goals"></section>
+    <!-- HABITS -->
+    <section class="view" id="view-habits"></section>
+    <!-- FINANCES -->
+    <section class="view" id="view-finances"></section>
+    <!-- NOTES -->
+    <section class="view" id="view-notes"></section>
+    <!-- TEMPLATES -->
+    <section class="view" id="view-templates"></section>
+  </main>
+</div>
+
+<script>
+/* ============ ICONS ============ */
+function svg(paths, extra){ return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${paths}</svg>`; }
+const ICON = {
+  home: svg('<path d="M3 11l9-7 9 7"/><path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9"/>'),
+  annual: svg('<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/><path d="M8 13h2M14 13h2M8 17h2M14 17h2"/>'),
+  monthly: svg('<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/>'),
+  daily: svg('<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>'),
+  goals: svg('<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="0.6" fill="currentColor"/>'),
+  habits: svg('<path d="M12 2s5 4.5 5 10a5 5 0 0 1-10 0c0-2 1-3.2 1-3.2S9 11 9 12.5A3 3 0 0 0 12 15.5"/>'),
+  finances: svg('<rect x="2" y="6" width="20" height="14" rx="2"/><path d="M2 10h20"/><circle cx="17" cy="15" r="1.4" fill="currentColor" stroke="none"/>'),
+  notes: svg('<path d="M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"/><path d="M14 2v6h6"/><path d="M8 13h8M8 17h5"/>'),
+  calendar: svg('<rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/>'),
+  templates: svg('<rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/>'),
+  bell: svg('<path d="M6 8a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6"/><path d="M10 20a2 2 0 0 0 4 0"/>'),
+  chevLeft: svg('<path d="M15 18l-6-6 6-6"/>'),
+  chevRight: svg('<path d="M9 18l6-6-6-6"/>'),
+  plus: svg('<path d="M12 5v14M5 12h14"/>'),
+  x: svg('<path d="M18 6L6 18M6 6l12 12"/>'),
+};
+document.getElementById('navGroup').innerHTML = document.getElementById('navGroup').innerHTML.replace(/\$\{ICON\.(\w+)\}/g, (m,k)=>ICON[k]||'');
+
+/* ============ STATE ============ */
+const KEYS = {
+  goals:'planova:goals', areas:'planova:areas', tasks:'planova:tasks', sched:'planova:sched',
+  habits:'planova:habits', budget:'planova:budget', notes:'planova:notes', dates:'planova:dates',
+  reflections:'planova:reflections', focus:'planova:focus', quote:'planova:quote'
+};
+let S = { goals:[], areas:[], tasks:[], sched:[], habits:[], budget:{}, notes:[], dates:[], reflections:{}, focus:{}, quote:'' };
+let view = 'home';
+let annualYear = new Date().getFullYear();
+let monthCursor = new Date();
+let dayCursor = new Date();
+let selectedMonthDay = fmt(new Date());
+let habitWeekStart = startOfWeek(new Date());
+
+const GOAL_COLORS = { blue:['var(--blue)','var(--blue-soft)'], pink:['var(--pink)','var(--pink-soft)'], green:['var(--green)','var(--green-soft)'], purple:['var(--purple)','var(--purple-soft)'], amber:['var(--amber)','var(--amber-soft)'] };
+const MONTH_NAMES=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const MONTH_FULL=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const WEEKDAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const LIFE_AREA_META = {
+  career:{ name:'Career', icon:'🎯', color:'blue', css:'var(--blue)' },
+  health:{ name:'Health', icon:'❤️', color:'pink', css:'var(--green)' },
+  money:{ name:'Money', icon:'💰', color:'green', css:'var(--amber)' },
+  learning:{ name:'Learning', icon:'📚', color:'purple', css:'var(--purple)' },
+  relationships:{ name:'Relationships', icon:'🏡', color:'pink', css:'var(--pink)' },
+  personal_growth:{ name:'Personal Growth', icon:'✦', color:'blue', css:'var(--blue)' },
+};
+const API_BASE = window.location.origin;
+let apiToken = localStorage.getItem('planova:token') || '';
+let apiUserEmail = localStorage.getItem('planova:email') || '';
+let apiOnline = false;
+let apiAuthConfig = null;
+let apiCurrentPlan = null;
+let apiCanSwitchPlans = false;
+let apiProfile = null;
+let apiBilling = null;
+let apiDashboard = null;
+let apiDashboardOverview = null;
+let apiHabitInsights = null;
+let apiReportsHistory = [];
+let apiPlans = [];
+let selectedRoadmapGoalId = null;
+
+function fmt(d){ const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0'); return `${y}-${m}-${day}`; }
+function ym(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; }
+function todayStr(){ return fmt(new Date()); }
+function uid(){ return 'x'+Math.random().toString(36).slice(2,9); }
+function esc(s){ const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+function startOfWeek(d){ const nd=new Date(d); const day=(nd.getDay()+6)%7; nd.setDate(nd.getDate()-day); return nd; }
+function addDays(d,n){ const nd=new Date(d); nd.setDate(nd.getDate()+n); return nd; }
+function addMinutesToTime(time, minutes){
+  const [h,m] = time.split(':').map(Number);
+  const total = h * 60 + m + minutes;
+  return `${String(Math.floor(total / 60) % 24).padStart(2,'0')}:${String(total % 60).padStart(2,'0')}`;
+}
+
+async function apiFetch(path, options={}){
+  const headers = Object.assign({'Content-Type':'application/json'}, options.headers||{});
+  if(apiToken) headers.Authorization = `Bearer ${apiToken}`;
+  const res = await fetch(`${API_BASE}${path}`, {...options, headers});
+  if(!res.ok){
+    const detail = await res.json().catch(()=>({message:res.statusText}));
+    throw new Error(Array.isArray(detail.message) ? detail.message.join(', ') : (detail.message || res.statusText));
+  }
+  return res.status === 204 ? null : res.json();
+}
+
+function consumeOAuthRedirect(){
+  const hash = window.location.hash && window.location.hash.startsWith('#') ? window.location.hash.slice(1) : '';
+  if(!hash) return false;
+  const params = new URLSearchParams(hash);
+  const token = params.get('access_token');
+  if(!token) return false;
+  apiToken = token;
+  apiUserEmail = params.get('email') || apiUserEmail;
+  localStorage.setItem('planova:token', apiToken);
+  if(apiUserEmail) localStorage.setItem('planova:email', apiUserEmail);
+  history.replaceState(null, document.title, window.location.pathname + window.location.search);
+  return true;
+}
+
+async function getAuthConfig(){
+  if(apiAuthConfig) return apiAuthConfig;
+  apiAuthConfig = await apiFetch('/auth/config');
+  return apiAuthConfig;
+}
+
+function logClientIssue(level, message, meta={}){
+  fetch(`${API_BASE}/logs/client`, {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({level, message, source:'planova.html', meta}),
+    keepalive:true,
+  }).catch(()=>{});
+}
+
+window.addEventListener('error', event=>{
+  logClientIssue('error', event.message || 'Unhandled browser error', {
+    filename:event.filename,
+    line:event.lineno,
+    column:event.colno,
+  });
+});
+
+window.addEventListener('unhandledrejection', event=>{
+  logClientIssue('error', event.reason && event.reason.message ? event.reason.message : 'Unhandled promise rejection');
+});
+
+async function ensureSession(){
+  consumeOAuthRedirect();
+  if(apiToken) return true;
+  const config = await getAuthConfig();
+  if(config && config.googleOAuthEnabled && !config.devEmailLoginEnabled){
+    window.location.href = config.googleAuthUrl || '/auth/google';
+    return false;
+  }
+  if(config && !config.devEmailLoginEnabled){
+    throw new Error('Production login is not configured.');
+  }
+  const email = apiUserEmail || prompt('Enter your email to connect Planova to the backend:');
+  if(!email){
+    if(config && config.googleOAuthEnabled) window.location.href = config.googleAuthUrl || '/auth/google';
+    return false;
+  }
+  const session = await apiFetch('/auth/login', {method:'POST', body:JSON.stringify({email})});
+  apiToken = session.access_token;
+  apiUserEmail = email;
+  localStorage.setItem('planova:token', apiToken);
+  localStorage.setItem('planova:email', apiUserEmail);
+  return true;
+}
+
+function taskFromApi(task){
+  return {
+    id:String(task.id),
+    text:task.title,
+    date:(task.dueDate || task.startTime || new Date().toISOString()).slice(0,10),
+    done:task.status === 'done',
+    priority:task.priority ? task.priority <= 3 : true,
+    backend:task,
+  };
+}
+
+function dateFromApi(value){
+  return String(value || '').slice(0,10);
+}
+
+function timeFromApi(value){
+  const text = String(value || '');
+  return text.includes('T') ? text.slice(11,16) : text.slice(0,5);
+}
+
+function focusBlockFromApi(block){
+  const type = block.type || 'focus';
+  return {
+    id:`focus-${block.id}`,
+    rawId:String(block.id),
+    backendType:'focusBlock',
+    date:dateFromApi(block.start),
+    start:timeFromApi(block.start),
+    end:timeFromApi(block.end),
+    label:block.title || (block.task && block.task.title) || (type === 'break' ? 'Break' : 'Focus block'),
+    color:type === 'break' ? 'var(--amber)' : 'var(--green)',
+    type,
+    backend:block,
+  };
+}
+
+function goalFromApi(goal){
+  const area = LIFE_AREA_META[goal.lifeArea] || LIFE_AREA_META.career;
+  return {id:String(goal.id), title:goal.title, icon:area.icon, color:area.color, progress:goal.progress, roadmap:roadmapStats(goal), backend:goal};
+}
+
+function roadmapStats(goal){
+  const milestones = goal.milestones || [];
+  const weeklyFocuses = milestones.flatMap(milestone=>milestone.weeklyFocuses || []);
+  const tasks = weeklyFocuses.flatMap(week=>week.tasks || []);
+  const nextFocus = weeklyFocuses
+    .filter(week=>week.status !== 'completed')
+    .sort((a,b)=>String(a.weekStart).localeCompare(String(b.weekStart)))[0] || null;
+  return {
+    milestones: milestones.length,
+    weeklyFocuses: weeklyFocuses.length,
+    tasks: tasks.length,
+    nextFocus,
+  };
+}
+
+function habitFromApi(habit){
+  const area = LIFE_AREA_META[habit.lifeArea] || LIFE_AREA_META.personal_growth;
+  const completions = {};
+  (habit.logs || []).forEach(log=>{ if(log.completed) completions[log.date.slice(0,10)] = true; });
+  return {id:String(habit.id), name:habit.title, icon:area.icon, color:area.css, completions, backend:habit};
+}
+
+function noteFromApi(note){
+  return {id:String(note.id), text:note.text, month:note.month || undefined, createdAt:note.createdAt, backendType:'note', backend:note};
+}
+
+function importantDateFromApi(item){
+  return {id:String(item.id), title:item.title, date:dateFromApi(item.date), backendType:'importantDate', backend:item};
+}
+
+function budgetFromApi(budget){
+  return {
+    id:String(budget.id),
+    total:Number(budget.total || 0),
+    expenses:(budget.expenses || []).map(expense=>({
+      id:String(expense.id),
+      name:expense.name,
+      amount:Number(expense.amount || 0),
+      backendType:'expense',
+      backend:expense,
+    })),
+    backend:budget,
+  };
+}
+
+async function refreshFromApi(){
+  const [goals, tasks, habits, dashboard, dashboardOverview, planInfo, plans, profile, billingInfo, habitInsights, reportsHistory, notes, dates, reflections, monthlyFocuses] = await Promise.all([
+    apiFetch('/goals'),
+    apiFetch('/tasks'),
+    apiFetch('/habits'),
+    apiFetch('/dashboard/today').catch(()=>null),
+    apiFetch('/dashboard/overview').catch(()=>null),
+    apiFetch('/plans/me').catch(()=>null),
+    apiFetch('/plans').catch(()=>[]),
+    apiFetch('/profile').catch(()=>null),
+    apiFetch('/billing/me').catch(()=>null),
+    apiFetch('/insights/habits').catch(()=>null),
+    apiFetch('/reports/history').catch(()=>[]),
+    apiFetch('/personal/notes').catch(()=>[]),
+    apiFetch('/personal/dates').catch(()=>[]),
+    apiFetch('/personal/reflections').catch(()=>[]),
+    apiFetch('/personal/monthly-focus').catch(()=>[]),
+  ]);
+  apiCurrentPlan = planInfo && planInfo.plan ? planInfo.plan : null;
+  apiCanSwitchPlans = Boolean(planInfo && planInfo.devPlanSwitchEnabled);
+  apiProfile = profile || null;
+  apiBilling = billingInfo || null;
+  apiDashboard = dashboard || null;
+  apiDashboardOverview = dashboardOverview || null;
+  apiHabitInsights = habitInsights || null;
+  apiReportsHistory = reportsHistory || [];
+  apiPlans = plans || [];
+  S.goals = goals.map(goalFromApi);
+  S.tasks = tasks.map(taskFromApi);
+  S.habits = habits.map(habitFromApi);
+  S.notes = notes.map(noteFromApi);
+  S.dates = dates.map(importantDateFromApi);
+  S.reflections = Object.fromEntries(reflections.map(item=>[dateFromApi(item.date), item.text]));
+  S.focus = Object.fromEntries(monthlyFocuses.map(item=>[item.month, item.text]));
+  const areaSource = dashboardOverview && dashboardOverview.lifeAreas ? dashboardOverview.lifeAreas : (dashboard && dashboard.lifeAreas ? dashboard.lifeAreas : null);
+  if(areaSource){
+    S.areas = areaSource.map(area=>{
+      const meta = LIFE_AREA_META[area.lifeArea] || LIFE_AREA_META.personal_growth;
+      return {id:area.lifeArea, name:meta.name, color:meta.css, progress:area.score};
+    });
+  }
+  apiOnline = true;
+  renderProfile();
+}
+
+function renderProfile(){
+  const name = apiProfile && apiProfile.name ? apiProfile.name : (apiUserEmail ? apiUserEmail.split('@')[0] : 'Local User');
+  const plan = apiCurrentPlan ? apiCurrentPlan.name.toUpperCase() : 'LOCAL';
+  const initials = name.split(/[.\s_-]/).filter(Boolean).slice(0,2).map(x=>x[0]).join('').toUpperCase() || 'PU';
+  const avatar = document.querySelector('.avatar');
+  const profileName = document.querySelector('.profile-name');
+  const profileEmail = document.querySelector('.profile-email');
+  if(avatar) avatar.textContent = initials;
+  if(profileName) profileName.textContent = name;
+  if(profileEmail) profileEmail.textContent = apiOnline ? `${apiUserEmail} · ${plan}` : 'offline local mode';
+}
+function displayName(){
+  if(apiProfile && apiProfile.name) return apiProfile.name;
+  if(apiUserEmail) return apiUserEmail.split('@')[0];
+  return 'there';
+}
+
+/* ============ STORAGE ============ */
+async function loadAll(){
+  try{
+    if(await ensureSession()) await refreshFromApi();
+  }catch(e){
+    apiOnline = false;
+    console.warn('Planova API unavailable, using local data:', e.message);
+  }
+  if(!apiOnline){
+    const entries = await Promise.all(Object.entries(KEYS).map(async ([k,key])=>{
+      try{
+        const raw = localStorage.getItem(key);
+        if(raw) return [k, JSON.parse(raw)];
+        if(window.storage){
+          const r = await window.storage.get(key,false);
+          return [k, r&&r.value ? JSON.parse(r.value) : null];
+        }
+        return [k, null];
+      }
+      catch(e){ return [k, null]; }
+    }));
+    entries.forEach(([k,v])=>{ if(v!==null) S[k]=v; });
+    if(S.goals.length===0) seedDefaults();
+  }
+  renderShell();
+  renderProfile();
+  renderView();
+}
+async function save(key){
+  try{ localStorage.setItem(KEYS[key], JSON.stringify(S[key])); }catch(e){}
+  try{ if(window.storage) await window.storage.set(KEYS[key], JSON.stringify(S[key]), false); }catch(e){}
+}
+function seedDefaults(){
+  S.goals = [
+    {id:uid(), title:'Career Growth', icon:'🎯', color:'blue', progress:70},
+    {id:uid(), title:'Health & Wellness', icon:'❤️', color:'pink', progress:60},
+    {id:uid(), title:'Financial Freedom', icon:'💰', color:'green', progress:45},
+    {id:uid(), title:'Learning & Growth', icon:'📚', color:'purple', progress:80},
+  ];
+  S.areas = [
+    {id:uid(), name:'Career', color:'var(--blue)', progress:70},
+    {id:uid(), name:'Health', color:'var(--green)', progress:60},
+    {id:uid(), name:'Finance', color:'var(--amber)', progress:45},
+    {id:uid(), name:'Learning', color:'var(--purple)', progress:80},
+    {id:uid(), name:'Relationships', color:'var(--pink)', progress:55},
+    {id:uid(), name:'Personal Growth', color:'var(--blue)', progress:65},
+  ];
+  S.habits = [
+    {id:uid(), name:'Workout', icon:'🏋️', color:'var(--green)', completions:{}},
+    {id:uid(), name:'Meditate', icon:'🧘', color:'var(--purple)', completions:{}},
+    {id:uid(), name:'Read', icon:'📖', color:'var(--blue)', completions:{}},
+    {id:uid(), name:'No Sugar', icon:'🍬', color:'var(--pink)', completions:{}},
+  ];
+  const y = new Date().getFullYear();
+  S.dates = [
+    {id:uid(), date:`${y}-05-20`, title:'Product Launch'},
+    {id:uid(), date:`${y}-06-12`, title:'Team Offsite'},
+    {id:uid(), date:`${y}-08-03`, title:'Annual Review'},
+  ];
+  S.quote = 'The future depends on what you do today. — Mahatma Gandhi';
+  save('goals'); save('areas'); save('habits'); save('dates'); save('quote');
+}
+
+/* ============ SHELL (nav + topbar) ============ */
+function renderShell(){
+  document.querySelectorAll('.nav-item').forEach(b=>{
+    b.addEventListener('click', ()=>{ view = b.dataset.view; renderView(); });
+  });
+}
+
+function setTopbar(title, sub, actionsHtml){
+  document.getElementById('pageTitle').textContent = title;
+  document.getElementById('pageSub').textContent = sub;
+  const planPicker = apiOnline && apiCanSwitchPlans ? `
+    <select id="planPicker" style="border:1px solid var(--border);border-radius:999px;background:var(--surface);padding:9px 12px;font-weight:700;color:var(--ink-soft);">
+      ${['free','pro','premium'].map(p=>`<option value="${p}" ${apiCurrentPlan&&apiCurrentPlan.name===p?'selected':''}>${p.toUpperCase()}</option>`).join('')}
+    </select>` : '';
+  document.getElementById('topbarActions').innerHTML = (actionsHtml||'') + planPicker + `<button class="bell-btn">${ICON.bell}</button>`;
+  const picker = document.getElementById('planPicker');
+  if(picker){
+    picker.onchange = async ()=>{
+      try{
+        const result = await apiFetch('/plans/me', {method:'PATCH', body:JSON.stringify({plan:picker.value})});
+        apiCurrentPlan = result.plan;
+        await refreshFromApi();
+        renderProfile();
+        renderView();
+      }catch(e){ alert(e.message); }
+    };
+  }
+  document.querySelectorAll('.nav-item').forEach(b=> b.dataset.active = (b.dataset.view===view && ((view!=='monthly')||b.textContent.includes('Monthly'))) );
+}
+
+function renderView(){
+  document.querySelectorAll('.view').forEach(v=> v.dataset.active = 'false');
+  document.querySelectorAll('.nav-item').forEach(b=> b.dataset.active = String(b.dataset.view===view));
+  document.getElementById('view-'+(view==='templates'?'templates':view)).dataset.active = 'true';
+  if(view==='home') renderHome();
+  else if(view==='annual') renderAnnual();
+  else if(view==='monthly') renderMonthly();
+  else if(view==='daily') renderDaily();
+  else if(view==='goals') renderGoals();
+  else if(view==='habits') renderHabits();
+  else if(view==='finances') renderFinances();
+  else if(view==='notes') renderNotes();
+  else renderTemplates();
+}
+
+/* ============ HOME ============ */
+function renderHome(){
+  setTopbar('Home', `Welcome back, ${displayName()}. Here's your snapshot for ${new Date().toLocaleDateString(undefined,{weekday:'long', month:'long', day:'numeric'})}.`);
+  const t = todayStr();
+  const start = new Date(annualYear,0,1), end = new Date(annualYear,11,31);
+  const daysPassed = Math.min(365, Math.ceil((new Date()-start)/86400000)+1);
+  const yearPercent = Math.min(100, Math.round((daysPassed / 365) * 100));
+  const avgGoal = apiDashboard && apiDashboard.goals ? apiDashboard.goals.averageProgress : (S.goals.length ? Math.round(S.goals.reduce((a,g)=>a+g.progress,0)/S.goals.length) : 0);
+  const todaysTasks = S.tasks.filter(x=>x.date===t);
+  const doneToday = todaysTasks.filter(x=>x.done).length;
+  const streak = S.habits.length ? Math.max(...S.habits.map(h=> Object.values(h.completions).filter(Boolean).length), 0) : 0;
+  const upcoming = [...S.dates].filter(d=>d.date>=t).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,4);
+  const report = apiDashboard && apiDashboard.weeklyReport ? apiDashboard.weeklyReport : null;
+  const reportSummary = report && report.insights && report.insights.summary ? report.insights.summary : [];
+  const areaCards = (apiDashboardOverview && apiDashboardOverview.lifeAreas
+    ? apiDashboardOverview.lifeAreas
+    : (apiDashboard && apiDashboard.lifeAreas ? apiDashboard.lifeAreas : [])).slice(0,6);
+
+  const el = document.getElementById('view-home');
+  el.innerHTML = `
+    <div class="grid grid-3" style="margin-bottom:18px;">
+      <div class="card"><div class="stat-label">YEAR TIME</div><div class="stat-num" style="font-size:26px;margin-top:4px;">${yearPercent}%</div><div class="stat-label">${daysPassed} of 365 days</div></div>
+      <div class="card"><div class="stat-label">TODAY'S TASKS</div><div class="stat-num" style="font-size:26px;margin-top:4px;">${doneToday}/${todaysTasks.length}</div><div class="stat-label">completed</div></div>
+      <div class="card"><div class="stat-label">HABIT STREAK</div><div class="stat-num" style="font-size:26px;margin-top:4px;">${streak}</div><div class="stat-label">days logged</div></div>
+    </div>
+    <div class="grid grid-2" style="margin-bottom:18px;">
+      <div class="card">
+        <div class="card-head"><span class="card-title">Jump back in</span></div>
+        <div class="grid grid-2" id="homeTiles"></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><span class="card-title">Upcoming dates</span><button class="link-btn" data-goto="annual">View all</button></div>
+        <div id="homeDates"></div>
+      </div>
+    </div>
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-head"><span class="card-title">Weekly Review</span><span class="bar-pct">${apiOnline ? 'LIVE' : 'LOCAL'}</span></div>
+        ${report ? `
+          <div class="grid grid-3" style="gap:10px;margin-bottom:14px;">
+            <div><div class="stat-num">${report.tasksCompleted}</div><div class="stat-label">Tasks done</div></div>
+            <div><div class="stat-num">${report.tasksOverdue}</div><div class="stat-label">Overdue</div></div>
+            <div><div class="stat-num">${report.totalFocusHours}</div><div class="stat-label">Focus hours</div></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px;">
+            ${reportSummary.map(item=>`<div class="date-sub">${esc(item)}</div>`).join('')}
+          </div>` : '<div class="empty">Connect to the backend to see weekly review data.</div>'}
+      </div>
+      <div class="card">
+        <div class="card-head"><span class="card-title">Life Areas</span><button class="link-btn" data-goto="annual">View all</button></div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          ${areaCards.length ? areaCards.map(area=>{
+            const meta = LIFE_AREA_META[area.lifeArea] || {name:area.lifeArea, css:'var(--primary)'};
+            return `<div class="area-row">
+              <div class="area-dot" style="background:${meta.css};"></div>
+              <div class="area-name">${esc(meta.name)}</div>
+              <div class="area-track"><div class="bar-track"><div class="bar-fill" style="width:${area.score}%;background:${meta.css};"></div></div></div>
+              <div class="bar-pct">${area.score}%</div>
+            </div>`;
+          }).join('') : '<div class="empty">No life-area activity yet.</div>'}
+        </div>
+      </div>
+    </div>
+  `;
+  const tiles = [
+    {v:'daily', label:'Plan today', sub:'Priorities & schedule', c:'blue', icon:ICON.daily},
+    {v:'monthly', label:'Monthly view', sub:'Calendar & budget', c:'purple', icon:ICON.monthly},
+    {v:'goals', label:'Your goals', sub:`${S.goals.length} active · ${avgGoal}% avg`, c:'green', icon:ICON.goals},
+    {v:'habits', label:'Habits', sub:`${S.habits.length} tracked`, c:'pink', icon:ICON.habits},
+  ];
+  document.getElementById('homeTiles').innerHTML = tiles.map(t=>`
+    <div class="tile" data-goto="${t.v}">
+      <div class="tile-icon" style="background:var(--${t.c}-soft);color:var(--${t.c});">${t.icon}</div>
+      <div class="tile-title">${t.label}</div>
+      <div class="tile-sub">${t.sub}</div>
+    </div>`).join('');
+  document.getElementById('homeDates').innerHTML = upcoming.length ? upcoming.map(d=>{
+    const dt = new Date(d.date+'T00:00:00');
+    return `<div class="date-row"><div class="date-badge"><div class="d">${dt.getDate()}</div><div class="m">${MONTH_NAMES[dt.getMonth()]}</div></div><div><div class="date-title">${esc(d.title)}</div></div></div>`;
+  }).join('') : '<div class="empty">No upcoming dates yet.</div>';
+  el.querySelectorAll('[data-goto]').forEach(t=> t.addEventListener('click', ()=>{ view=t.dataset.goto; renderView(); }));
+}
+
+/* ============ ANNUAL ============ */
+function renderAnnual(){
+  setTopbar('Annual Planner', 'Plan your year. Achieve your vision.', `
+    <div class="date-nav">
+      <button class="icon-btn" id="yPrev">${ICON.chevLeft}</button>
+      <span class="date-nav-label">${annualYear}</span>
+      <button class="icon-btn" id="yNext">${ICON.chevRight}</button>
+    </div>`);
+  document.getElementById('yPrev').onclick=()=>{ annualYear--; renderAnnual(); };
+  document.getElementById('yNext').onclick=()=>{ annualYear++; renderAnnual(); };
+
+  const start = new Date(annualYear,0,1);
+  const daysPassed = annualYear===new Date().getFullYear() ? Math.ceil((new Date()-start)/86400000)+1 : (annualYear<new Date().getFullYear()?365:0);
+  const onTrack = S.goals.filter(g=>g.progress>=40 && g.progress<90).length;
+  const atRisk = S.goals.filter(g=>g.progress<40).length;
+  const completed = S.goals.filter(g=>g.progress>=90).length;
+  const avg = S.goals.length ? Math.round(S.goals.reduce((a,g)=>a+g.progress,0)/S.goals.length) : 0;
+  const c = 2*Math.PI*44;
+
+  const el = document.getElementById('view-annual');
+  el.innerHTML = `
+    <div class="grid grid-2" style="margin-bottom:18px;">
+      <div class="card">
+        <div class="card-title" style="margin-bottom:14px;">Year Progress</div>
+        <div class="ring-box">
+          <div class="ring-wrap">
+            <svg width="104" height="104" viewBox="0 0 104 104">
+              <circle class="ring-track" cx="52" cy="52" r="44"></circle>
+              <circle class="ring-fill" cx="52" cy="52" r="44" stroke-dasharray="${c}" stroke-dashoffset="${c-(avg/100)*c}"></circle>
+            </svg>
+            <div class="ring-center"><div class="ring-pct">${avg}%</div><div class="ring-caption">completed</div></div>
+          </div>
+          <div class="stat-cols">
+            <div class="stat-col"><div class="stat-num">${daysPassed}/365</div><div class="stat-label">Days passed</div></div>
+            <div class="stat-col"><div class="stat-num">${onTrack}</div><div class="stat-label">On track</div></div>
+            <div class="stat-col"><div class="stat-num">${atRisk}</div><div class="stat-label">At risk</div></div>
+            <div class="stat-col"><div class="stat-num">${completed}</div><div class="stat-label">Completed</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><span class="card-title">Yearly Goals</span><button class="link-btn" data-goto="goals">View all</button></div>
+        <div class="grid grid-2" id="annualGoals"></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:18px;">
+      <div class="card-head"><span class="card-title">Months Overview</span></div>
+      <div class="months-row" id="monthsRow"></div>
+    </div>
+
+    <div class="grid grid-3">
+      <div class="card">
+        <div class="card-head"><span class="card-title">Life Areas</span></div>
+        <div id="areasList"></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><span class="card-title">Important Dates</span></div>
+        <div id="datesList" style="margin-bottom:10px;"></div>
+        <div class="mini-add">
+          <input type="date" id="dateInputDate" />
+          <input type="text" id="dateInputTitle" placeholder="Event title" maxlength="60" />
+          <button id="dateAddBtn">${ICON.plus}</button>
+        </div>
+      </div>
+      <div class="card quote-card">
+        <div class="card-head"><span class="card-title">Notes</span><button class="edit-toggle" id="quoteEditBtn">Edit</button></div>
+        <div class="quote-mark">"</div>
+        <div id="quoteView" style="font-family:'Manrope',sans-serif;font-size:18px;font-weight:600;line-height:1.4;">${esc(S.quote)}</div>
+        <textarea class="quote-text" id="quoteEdit" style="display:none;">${esc(S.quote)}</textarea>
+      </div>
+    </div>
+  `;
+  el.querySelectorAll('[data-goto]').forEach(t=> t.addEventListener('click', ()=>{ view=t.dataset.goto; renderView(); }));
+
+  // goals mini cards (top 4)
+  document.getElementById('annualGoals').innerHTML = S.goals.slice(0,4).map(g=>{
+    const [fg,bgc] = GOAL_COLORS[g.color]||GOAL_COLORS.blue;
+    return `<div class="goal-card">
+      <div class="goal-icon" style="background:${bgc};">${g.icon}</div>
+      <div class="goal-title">${esc(g.title)}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${g.progress}%;background:${fg};"></div></div>
+      <div class="bar-row"><span class="bar-pct">${g.progress}%</span></div>
+    </div>`;
+  }).join('');
+
+  // months overview
+  document.getElementById('monthsRow').innerHTML = MONTH_NAMES.map((mn,i)=>{
+    const monTasks = S.tasks.filter(t=>t.date.startsWith(`${annualYear}-${String(i+1).padStart(2,'0')}`));
+    const pct = monTasks.length ? Math.round(monTasks.filter(t=>t.done).length/monTasks.length*100) : null;
+    const isCurrent = (i===new Date().getMonth() && annualYear===new Date().getFullYear());
+    return `<div class="month-chip" data-current="${isCurrent}" data-m="${i}">
+      <div class="month-chip-name">${mn}</div>
+      <div class="month-chip-val" data-done="${pct===100}">${pct===null?'–': pct===100?'✓':pct+'%'}</div>
+    </div>`;
+  }).join('');
+  document.querySelectorAll('.month-chip').forEach(c=> c.addEventListener('click', ()=>{
+    monthCursor = new Date(annualYear, Number(c.dataset.m), 1); view='monthly'; renderView();
+  }));
+
+  // life areas
+  document.getElementById('areasList').innerHTML = S.areas.map(a=>`
+    <div class="area-row">
+      <span class="area-dot" style="background:${a.color};"></span>
+      <span class="area-name">${esc(a.name)}</span>
+      <div class="area-track"><div class="bar-track"><div class="bar-fill" style="width:${a.progress}%;background:${a.color};"></div></div></div>
+      <span class="bar-pct" style="width:32px;text-align:right;">${a.progress}%</span>
+      <div class="stepper">
+        <button class="step-btn" data-area="${a.id}" data-d="-5">−</button>
+        <button class="step-btn" data-area="${a.id}" data-d="5">+</button>
+      </div>
+    </div>`).join('');
+  document.querySelectorAll('[data-area]').forEach(b=> b.addEventListener('click', ()=>{
+    const a = S.areas.find(x=>x.id===b.dataset.area);
+    a.progress = Math.max(0, Math.min(100, a.progress + Number(b.dataset.d)));
+    save('areas'); renderAnnual();
+  }));
+
+  // important dates
+  renderDatesList();
+  document.getElementById('dateAddBtn').onclick = async ()=>{
+    const d = document.getElementById('dateInputDate').value;
+    const t = document.getElementById('dateInputTitle').value.trim();
+    if(!d || !t) return;
+    try{
+      if(apiOnline){
+        const created = await apiFetch('/personal/dates', {method:'POST', body:JSON.stringify({date:d, title:t})});
+        S.dates.push(importantDateFromApi(created));
+      }else{
+        S.dates.push({id:uid(), date:d, title:t}); save('dates');
+      }
+      document.getElementById('dateInputTitle').value='';
+      renderDatesList();
+    }catch(e){ alert(e.message); }
+  };
+
+  // quote edit
+  document.getElementById('quoteEditBtn').onclick = ()=>{
+    const view_ = document.getElementById('quoteView'), edit = document.getElementById('quoteEdit');
+    const editing = edit.style.display==='block';
+    if(editing){ S.quote = edit.value; save('quote'); view_.textContent = S.quote; view_.style.display='block'; edit.style.display='none'; document.getElementById('quoteEditBtn').textContent='Edit'; }
+    else{ view_.style.display='none'; edit.style.display='block'; edit.focus(); document.getElementById('quoteEditBtn').textContent='Save'; }
+  };
+}
+function renderDatesList(){
+  const t = todayStr();
+  const upcoming = [...S.dates].sort((a,b)=>a.date.localeCompare(b.date));
+  document.getElementById('datesList').innerHTML = upcoming.length ? upcoming.map(d=>{
+    const dt = new Date(d.date+'T00:00:00');
+    return `<div class="date-row">
+      <div class="date-badge"><div class="d">${dt.getDate()}</div><div class="m">${MONTH_NAMES[dt.getMonth()]}</div></div>
+      <div><div class="date-title">${esc(d.title)}</div><div class="date-sub">${dt.getFullYear()}</div></div>
+      <button class="date-del" data-del="${d.id}">${ICON.x}</button>
+    </div>`;
+  }).join('') : '<div class="empty">No dates added yet.</div>';
+  document.querySelectorAll('[data-del]').forEach(b=> b.addEventListener('click', async ()=>{
+    const id = b.dataset.del;
+    const item = S.dates.find(x=>x.id===id);
+    const prev = [...S.dates];
+    S.dates = S.dates.filter(x=>x.id!==id);
+    try{
+      if(apiOnline && item && item.backendType === 'importantDate') await apiFetch(`/personal/dates/${id}`, {method:'DELETE'});
+      else save('dates');
+      renderDatesList();
+    }catch(e){ S.dates = prev; alert(e.message); renderDatesList(); }
+  }));
+}
+
+/* ============ MONTHLY ============ */
+async function renderMonthly(){
+  setTopbar('Monthly Planner', `Focus for ${MONTH_FULL[monthCursor.getMonth()]} ${monthCursor.getFullYear()}.`, `
+    <div class="date-nav">
+      <button class="icon-btn" id="mPrev">${ICON.chevLeft}</button>
+      <span class="date-nav-label">${MONTH_NAMES[monthCursor.getMonth()]} ${monthCursor.getFullYear()}</span>
+      <button class="icon-btn" id="mNext">${ICON.chevRight}</button>
+    </div>
+    <button class="link-btn" id="mToday" style="background:var(--surface);border:1px solid var(--border);padding:8px 14px;border-radius:999px;">Today</button>
+  `);
+  document.getElementById('mPrev').onclick=()=>{ monthCursor.setMonth(monthCursor.getMonth()-1); renderMonthly(); };
+  document.getElementById('mNext').onclick=()=>{ monthCursor.setMonth(monthCursor.getMonth()+1); renderMonthly(); };
+  document.getElementById('mToday').onclick=()=>{ monthCursor=new Date(); selectedMonthDay=todayStr(); renderMonthly(); };
+
+  const key = ym(monthCursor);
+  if(apiOnline && (!S.budget[key] || !S.budget[key].backend)) await loadBudgetFromApi(key);
+  const focusText = S.focus[key] || '';
+
+  const el = document.getElementById('view-monthly');
+  el.innerHTML = `
+    <div class="month-layout" style="margin-bottom:18px;">
+      <div class="card">
+        <div class="weekday-row">${WEEKDAYS.map(w=>`<span>${w}</span>`).join('')}</div>
+        <div class="cal-grid" id="calGrid"></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:18px;">
+        <div class="card">
+          <div class="card-head"><span class="card-title">Monthly Focus</span><button class="edit-toggle" id="focusEditBtn">Edit</button></div>
+          <div id="focusView" style="font-family:'Manrope',sans-serif;font-size:16px;font-weight:600;line-height:1.4;">${focusText ? esc(focusText) : '<span style="color:var(--ink-faint);font-family:Inter;font-weight:500;font-size:13px;">No focus set — click Edit to add one.</span>'}</div>
+          <textarea class="plain" id="focusEdit" style="display:none;">${esc(focusText)}</textarea>
+        </div>
+        <div class="card">
+          <div class="card-head"><span class="card-title">Top 3 Priorities</span></div>
+          <div id="monthPriorities"></div>
+          <div class="mini-add" style="margin-top:10px;"><input type="text" id="priorityInput" placeholder="Add a priority…" maxlength="80"/><button id="priorityAddBtn">${ICON.plus}</button></div>
+        </div>
+      </div>
+    </div>
+    <div class="grid grid-3">
+      <div class="card">
+        <div class="card-head"><span class="card-title">Budget</span><button class="link-btn" data-goto="finances">Edit</button></div>
+        <div id="budgetSummary"></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><span class="card-title">Habit Overview</span><span class="bar-pct">This month</span></div>
+        <div class="mini-icon-row" id="habitOverview"></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><span class="card-title">Notes</span></div>
+        <div id="monthNotes" style="margin-bottom:10px;"></div>
+        <div class="mini-add"><input type="text" id="monthNoteInput" placeholder="Quick note…" maxlength="120"/><button id="monthNoteBtn">${ICON.plus}</button></div>
+      </div>
+    </div>
+  `;
+  el.querySelectorAll('[data-goto]').forEach(t=> t.addEventListener('click', ()=>{ view=t.dataset.goto; renderView(); }));
+
+  renderCalGrid();
+  renderMonthPriorities();
+  renderBudgetSummary();
+  renderHabitOverview();
+  renderMonthNotes();
+
+  document.getElementById('focusEditBtn').onclick=async ()=>{
+    const v=document.getElementById('focusView'), e=document.getElementById('focusEdit');
+    if(e.style.display==='block'){
+      const old = S.focus[key] || '';
+      S.focus[key]=e.value.trim();
+      try{
+        if(apiOnline) await apiFetch('/personal/monthly-focus', {method:'PUT', body:JSON.stringify({month:key, text:S.focus[key]})});
+        else save('focus');
+        renderMonthly();
+      }catch(err){ S.focus[key]=old; alert(err.message); renderMonthly(); }
+    }
+    else{ v.style.display='none'; e.style.display='block'; e.focus(); document.getElementById('focusEditBtn').textContent='Save'; }
+  };
+  document.getElementById('priorityAddBtn').onclick=async ()=>{
+    const inp=document.getElementById('priorityInput');
+    const text=inp.value.trim(); if(!text) return;
+    const dayPriorities = S.tasks.filter(t=>t.date===selectedMonthDay && t.priority);
+    if(dayPriorities.length>=3){ inp.value=''; return; }
+    try{
+      if(apiOnline){
+        const created = await apiFetch('/tasks', {method:'POST', body:JSON.stringify({title:text, dueDate:selectedMonthDay, priority:dayPriorities.length+1, duration:45, lifeArea:'career'})});
+        S.tasks.push(taskFromApi(created));
+      }else{
+        S.tasks.push({id:uid(), text, date:selectedMonthDay, done:false, priority:true});
+        save('tasks');
+      }
+      inp.value=''; renderMonthPriorities(); renderCalGrid();
+    }catch(e){ alert(e.message); }
+  };
+  document.getElementById('monthNoteBtn').onclick=async ()=>{
+    const inp=document.getElementById('monthNoteInput'); const text=inp.value.trim(); if(!text) return;
+    try{
+      if(apiOnline){
+        const created = await apiFetch('/personal/notes', {method:'POST', body:JSON.stringify({text, month:key})});
+        S.notes.push(noteFromApi(created));
+      }else{
+        S.notes.push({id:uid(), text, createdAt:Date.now(), month:key});
+        save('notes');
+      }
+      inp.value=''; renderMonthNotes();
+    }catch(e){ alert(e.message); }
+  };
+}
+function renderCalGrid(){
+  const grid = document.getElementById('calGrid');
+  const year=monthCursor.getFullYear(), month=monthCursor.getMonth();
+  const first = new Date(year,month,1);
+  const startOffset = (first.getDay()+6)%7; // Mon start
+  const daysInMonth = new Date(year,month+1,0).getDate();
+  const daysInPrev = new Date(year,month,0).getDate();
+  let cells=[];
+  for(let i=0;i<startOffset;i++) cells.push({d:new Date(year,month-1, daysInPrev-startOffset+1+i), muted:true});
+  for(let d=1; d<=daysInMonth; d++) cells.push({d:new Date(year,month,d), muted:false});
+  while(cells.length<42) cells.push({d:new Date(year,month+1, cells.length-(startOffset+daysInMonth)+1), muted:true});
+  grid.innerHTML = cells.map(c=>{
+    const ds=fmt(c.d); const has = S.tasks.some(t=>t.date===ds);
+    return `<button class="cal-cell" data-date="${ds}" data-muted="${c.muted}" data-today="${ds===todayStr()}" data-selected="${ds===selectedMonthDay}">${c.d.getDate()}${has?'<span class="cal-dot"></span>':''}</button>`;
+  }).join('');
+  grid.querySelectorAll('.cal-cell').forEach(c=> c.addEventListener('click', ()=>{ selectedMonthDay=c.dataset.date; renderCalGrid(); renderMonthPriorities(); }));
+}
+function renderMonthPriorities(){
+  const items = S.tasks.filter(t=>t.date===selectedMonthDay && t.priority).slice(0,3);
+  const colors=['var(--green)','var(--blue)','var(--purple)'];
+  const box = document.getElementById('monthPriorities');
+  if(!box) return;
+  box.innerHTML = items.length ? items.map((t,i)=>`
+    <div class="priority-item">
+      <div class="priority-num" style="background:${colors[i]};">${i+1}</div>
+      <div class="priority-text" data-done="${t.done}">${esc(t.text)}</div>
+      <button class="pcheck" data-done="${t.done}" data-id="${t.id}"></button>
+    </div>`).join('') : '<div class="empty">No priorities set for this day.</div>';
+  box.querySelectorAll('.pcheck').forEach(b=> b.addEventListener('click', async ()=>{
+    const t=S.tasks.find(x=>x.id===b.dataset.id); if(!t) return;
+    t.done=!t.done;
+    try{
+      if(apiOnline) await apiFetch(`/tasks/${t.id}/status`, {method:'PATCH', body:JSON.stringify({status:t.done?'done':'todo'})});
+      else save('tasks');
+      renderMonthPriorities();
+    }catch(e){ t.done=!t.done; alert(e.message); }
+  }));
+}
+function renderBudgetSummary(){
+  const key = ym(monthCursor);
+  const b = S.budget[key] || {total:0, expenses:[]};
+  const spent = b.expenses.reduce((a,e)=>a+Number(e.amount),0);
+  const pct = b.total>0 ? Math.min(100, Math.round(spent/b.total*100)) : 0;
+  document.getElementById('budgetSummary').innerHTML = `
+    <div class="budget-amt">$${spent.toLocaleString()}</div>
+    <div class="budget-of">of $${Number(b.total).toLocaleString()}</div>
+    <div class="bar-track" style="margin-top:10px;"><div class="bar-fill" style="width:${pct}%;background:${pct>90?'var(--red)':'var(--primary)'};"></div></div>
+    <div class="bar-pct" style="margin-top:6px;">${pct}%</div>`;
+}
+function renderHabitOverview(){
+  const year=monthCursor.getFullYear(), month=monthCursor.getMonth();
+  const daysInMonth = new Date(year,month+1,0).getDate();
+  document.getElementById('habitOverview').innerHTML = S.habits.map(h=>{
+    let count=0;
+    for(let d=1; d<=daysInMonth; d++){ const ds=`${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`; if(h.completions[ds]) count++; }
+    const pct = Math.round(count/daysInMonth*100);
+    return `<div class="mini-icon">
+      <div class="mini-icon-circle" style="background:color-mix(in srgb, ${h.color} 16%, white);">${h.icon}</div>
+      <div class="mini-icon-pct">${pct}%</div>
+      <div class="mini-icon-name">${esc(h.name)}</div>
+    </div>`;
+  }).join('') || '<div class="empty">No habits yet.</div>';
+}
+function renderMonthNotes(){
+  const key = ym(monthCursor);
+  const items = S.notes.filter(n=>n.month===key);
+  const box = document.getElementById('monthNotes');
+  box.innerHTML = items.length ? items.map(n=>`
+    <div class="note-card" style="margin-bottom:8px;">
+      <div class="note-txt">${esc(n.text)}</div>
+      <button class="note-del" data-id="${n.id}">${ICON.x}</button>
+    </div>`).join('') : '<div class="empty">No notes yet.</div>';
+  box.querySelectorAll('[data-id]').forEach(b=> b.addEventListener('click', async ()=>{
+    const id = b.dataset.id;
+    const item = S.notes.find(n=>n.id===id);
+    const prev = [...S.notes];
+    S.notes = S.notes.filter(n=>n.id!==id);
+    try{
+      if(apiOnline && item && item.backendType === 'note') await apiFetch(`/personal/notes/${id}`, {method:'DELETE'});
+      else save('notes');
+      renderMonthNotes();
+    }catch(e){ S.notes = prev; alert(e.message); renderMonthNotes(); }
+  }));
+}
+
+/* ============ DAILY ============ */
+function renderDaily(){
+  const ds = fmt(dayCursor);
+  setTopbar('Daily Planner', dayCursor.toLocaleDateString(undefined,{weekday:'long', month:'long', day:'numeric'}), `
+    <div class="date-nav">
+      <button class="icon-btn" id="dPrev">${ICON.chevLeft}</button>
+      <span class="date-nav-label">${dayCursor.toLocaleDateString(undefined,{month:'short',day:'numeric'})}</span>
+      <button class="icon-btn" id="dNext">${ICON.chevRight}</button>
+    </div>
+    <button class="link-btn" id="dToday" style="background:var(--surface);border:1px solid var(--border);padding:8px 14px;border-radius:999px;">Today</button>
+  `);
+  document.getElementById('dPrev').onclick=()=>{ dayCursor=addDays(dayCursor,-1); renderDaily(); };
+  document.getElementById('dNext').onclick=()=>{ dayCursor=addDays(dayCursor,1); renderDaily(); };
+  document.getElementById('dToday').onclick=()=>{ dayCursor=new Date(); renderDaily(); };
+
+  const el = document.getElementById('view-daily');
+  el.innerHTML = `
+    <div class="grid grid-2">
+      <div style="display:flex;flex-direction:column;gap:18px;">
+        <div class="card">
+          <div class="card-head"><span class="card-title">Top 3 Priorities</span></div>
+          <div id="dayPriorities"></div>
+          <div class="mini-add" style="margin-top:10px;"><input type="text" id="dPriorityInput" placeholder="Add a priority…" maxlength="80"/><button id="dPriorityBtn">${ICON.plus}</button></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><span class="card-title">Unfinished Tasks</span><span class="bar-pct">Smart reschedule</span></div>
+          <div id="unfinishedTasks"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><span class="card-title">Daily Reflection</span></div>
+          <textarea class="plain" id="reflectionInput" placeholder="What went well today?">${esc(S.reflections[ds]||'')}</textarea>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><span class="card-title">Schedule</span></div>
+        <div id="scheduleList" style="margin-bottom:12px;"></div>
+        <div class="mini-add">
+          <input type="time" id="schedTime" style="flex:0 0 100px;" />
+          <input type="text" id="schedLabel" placeholder="What's happening…" maxlength="60" />
+          <button id="schedAddBtn">${ICON.plus}</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-head"><span class="card-title">Planova Copilot</span><span class="bar-pct">${apiCurrentPlan ? apiCurrentPlan.name.toUpperCase() : 'OFFLINE'}</span></div>
+        <textarea class="plain" id="copilotPrompt" placeholder="I have an exam, gym, work, and need to finish a project."></textarea>
+        <div class="mini-add" style="margin-top:10px;">
+          <button id="copilotPreviewBtn">Preview</button>
+          <button id="copilotApplyBtn">Apply</button>
+        </div>
+        <div id="copilotResult" style="margin-top:12px;"></div>
+      </div>
+    </div>
+  `;
+  renderDayPriorities(); renderUnfinishedTasks(ds); renderSchedule();
+  if(apiOnline) loadScheduleFromApi(ds);
+
+  document.getElementById('dPriorityBtn').onclick=async ()=>{
+    const inp=document.getElementById('dPriorityInput'); const text=inp.value.trim(); if(!text) return;
+    const existing = S.tasks.filter(t=>t.date===ds && t.priority);
+    if(existing.length>=3){ inp.value=''; return; }
+    try{
+      if(apiOnline){
+        const created = await apiFetch('/tasks', {method:'POST', body:JSON.stringify({title:text, dueDate:ds, priority:existing.length+1, duration:45, lifeArea:'career'})});
+        S.tasks.push(taskFromApi(created));
+      }else{
+        S.tasks.push({id:uid(), text, date:ds, done:false, priority:true});
+        save('tasks');
+      }
+      inp.value=''; renderDayPriorities();
+    }catch(e){ alert(e.message); }
+  };
+  document.getElementById('schedAddBtn').onclick=async ()=>{
+    const time=document.getElementById('schedTime').value; const label=document.getElementById('schedLabel').value.trim();
+    if(!time || !label) return;
+    try{
+      if(apiOnline){
+        const created = await apiFetch('/planner/focus-blocks', {
+          method:'POST',
+          body:JSON.stringify({title:label, date:ds, startTime:time, endTime:addMinutesToTime(time,45), type:'focus'}),
+        });
+        S.sched.push(focusBlockFromApi(created));
+      }else{
+        const colors=['var(--blue)','var(--pink)','var(--green)','var(--purple)','var(--amber)'];
+        S.sched.push({id:uid(), date:ds, start:time, label, color:colors[S.sched.length%colors.length]});
+        save('sched');
+      }
+      document.getElementById('schedLabel').value=''; renderSchedule();
+    }catch(e){ alert(e.message); }
+  };
+  document.getElementById('copilotPreviewBtn').onclick=()=>runCopilot(false, ds);
+  document.getElementById('copilotApplyBtn').onclick=()=>runCopilot(true, ds);
+  const refl = document.getElementById('reflectionInput');
+  refl.addEventListener('blur', async ()=>{
+    const old = S.reflections[ds] || '';
+    S.reflections[ds]=refl.value;
+    try{
+      if(apiOnline) await apiFetch('/personal/reflections', {method:'PUT', body:JSON.stringify({date:ds, text:refl.value})});
+      else save('reflections');
+    }catch(e){ S.reflections[ds]=old; alert(e.message); }
+  });
+}
+
+async function renderUnfinishedTasks(date){
+  const box = document.getElementById('unfinishedTasks');
+  if(!box) return;
+  if(!apiOnline){
+    const localItems = S.tasks.filter(t=>t.date<=date && !t.done).slice(0,5);
+    box.innerHTML = localItems.length ? localItems.map(t=>`<div class="priority-item"><div class="priority-text">${esc(t.text)}</div></div>`).join('') : '<div class="empty">No unfinished tasks.</div>';
+    return;
+  }
+  box.innerHTML = '<div class="empty">Checking unfinished tasks...</div>';
+  try{
+    const unfinished = await apiFetch(`/tasks/unfinished?date=${date}`);
+    const enriched = await Promise.all(unfinished.slice(0,6).map(async task=>{
+      try{
+        const options = await apiFetch(`/tasks/${task.id}/reschedule-options?date=${date}`);
+        return {...task, rescheduleOptions:options};
+      }catch{
+        return {...task, rescheduleOptions:null};
+      }
+    }));
+    box.innerHTML = enriched.length ? enriched.map(task=>{
+      const slot = task.rescheduleOptions && task.rescheduleOptions.suggestedSlot;
+      return `
+      <div class="priority-item" style="align-items:flex-start;">
+        <div class="priority-text">
+          ${esc(task.title)}
+          <div class="date-sub">${task.dueDate ? esc(task.dueDate.slice(0,10)) : 'No due date'} · ${task.lifeArea || 'general'}</div>
+          ${slot ? `<div class="date-sub">Best slot: ${esc(slot.date)} ${esc(slot.startTime)}-${esc(slot.endTime)}</div>` : ''}
+        </div>
+        ${slot ? `<button class="link-btn" data-reschedule="custom" data-task="${task.id}" data-due="${slot.date}" data-start="${slot.startDateTime}" data-end="${slot.endDateTime}">Best slot</button>` : ''}
+        <button class="link-btn" data-reschedule="tomorrow" data-task="${task.id}">Tomorrow</button>
+        <button class="link-btn" data-reschedule="weekend" data-task="${task.id}">Weekend</button>
+        <button class="link-btn" data-reschedule="split" data-task="${task.id}">Split</button>
+        <button class="sched-del" data-reschedule="no_longer_important" data-task="${task.id}" style="opacity:1;">${ICON.x}</button>
+      </div>`;
+    }).join('') : '<div class="empty">No unfinished tasks.</div>';
+    box.querySelectorAll('[data-reschedule]').forEach(btn=>btn.addEventListener('click', async ()=>{
+      const action = btn.dataset.reschedule;
+      const taskId = btn.dataset.task;
+      const body = {action};
+      if(action === 'custom'){
+        body.dueDate = btn.dataset.due;
+        body.startTime = btn.dataset.start;
+        body.endTime = btn.dataset.end;
+      }
+      if(action === 'split'){
+        const parts = prompt('Break this into smaller tasks, separated by commas:');
+        if(!parts) return;
+        body.parts = parts.split(',').map(x=>x.trim()).filter(Boolean);
+      }
+      try{
+        await apiFetch(`/tasks/${taskId}/reschedule`, {method:'POST', body:JSON.stringify(body)});
+        await refreshFromApi();
+        renderDaily();
+      }catch(e){ alert(e.message); }
+    }));
+  }catch(e){
+    box.innerHTML = `<div class="empty">${esc(e.message)}</div>`;
+  }
+}
+
+async function runCopilot(apply, date){
+  const promptEl = document.getElementById('copilotPrompt');
+  const resultEl = document.getElementById('copilotResult');
+  const prompt = promptEl.value.trim();
+  if(!prompt) return;
+  if(!apiOnline){ resultEl.innerHTML = '<div class="empty">Connect to the backend to use Copilot.</div>'; return; }
+  resultEl.innerHTML = '<div class="empty">Planning...</div>';
+  try{
+    const path = apply ? '/copilot/daily-plan/apply' : '/copilot/daily-plan';
+    const result = await apiFetch(path, {method:'POST', body:JSON.stringify({prompt, date, defaultLifeArea:'career'})});
+    const plan = apply ? result.plan : result;
+    if(apply){
+      await refreshFromApi();
+      await loadScheduleFromApi(date);
+      renderDayPriorities();
+    }
+    resultEl.innerHTML = `
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        ${(plan.topPriorities||[]).map((p,i)=>`<div class="priority-item"><div class="priority-num" style="background:var(--primary);">${i+1}</div><div class="priority-text">${esc(p)}</div></div>`).join('')}
+        ${(plan.focusBlocks||[]).slice(0,4).map(b=>`<div class="sched-row"><div class="sched-time">${esc(b.startTime)}-${esc(b.endTime)}</div><div class="sched-bar" style="background:var(--green);"></div><div class="sched-label">${esc(b.title)}</div></div>`).join('')}
+      </div>`;
+  }catch(e){
+    resultEl.innerHTML = `<div class="empty">${esc(e.message)}</div>`;
+  }
+}
+function renderDayPriorities(){
+  const ds = fmt(dayCursor);
+  const items = S.tasks.filter(t=>t.date===ds && t.priority).slice(0,3);
+  const colors=['var(--green)','var(--blue)','var(--purple)'];
+  const box = document.getElementById('dayPriorities');
+  box.innerHTML = items.length ? items.map((t,i)=>`
+    <div class="priority-item">
+      <div class="priority-num" style="background:${colors[i]};">${i+1}</div>
+      <div class="priority-text" data-done="${t.done}">${esc(t.text)}</div>
+      <button class="pcheck" data-done="${t.done}" data-id="${t.id}"></button>
+      <button class="sched-del" data-del="${t.id}" style="opacity:1;">${ICON.x}</button>
+    </div>`).join('') : '<div class="empty">No priorities yet — add up to three for today.</div>';
+  box.querySelectorAll('.pcheck').forEach(b=> b.addEventListener('click', async ()=>{
+    const t=S.tasks.find(x=>x.id===b.dataset.id); if(!t) return;
+    t.done=!t.done;
+    try{
+      if(apiOnline) await apiFetch(`/tasks/${t.id}/status`, {method:'PATCH', body:JSON.stringify({status:t.done?'done':'todo'})});
+      else save('tasks');
+      renderDayPriorities();
+    }catch(e){ t.done=!t.done; alert(e.message); }
+  }));
+  box.querySelectorAll('[data-del]').forEach(b=> b.addEventListener('click', async ()=>{
+    const id = b.dataset.del;
+    const prev = [...S.tasks];
+    S.tasks=S.tasks.filter(x=>x.id!==id);
+    try{
+      if(apiOnline) await apiFetch(`/tasks/${id}`, {method:'DELETE'});
+      else save('tasks');
+      renderDayPriorities();
+    }catch(e){ S.tasks=prev; alert(e.message); }
+  }));
+}
+function renderSchedule(){
+  const ds = fmt(dayCursor);
+  const items = S.sched.filter(s=>s.date===ds).sort((a,b)=> a.start.localeCompare(b.start));
+  const box = document.getElementById('scheduleList');
+  box.innerHTML = items.length ? items.map(s=>`
+    <div class="sched-row">
+      <div class="sched-time">${esc(s.end ? `${s.start}-${s.end}` : s.start)}</div>
+      <div class="sched-bar" style="background:${s.color};"></div>
+      <div class="sched-label">${esc(s.label)}${s.type ? `<div class="date-sub">${esc(s.type)}</div>` : ''}</div>
+      <button class="sched-del" data-id="${s.id}">${ICON.x}</button>
+    </div>`).join('') : '<div class="empty">Nothing scheduled yet.</div>';
+  box.querySelectorAll('[data-id]').forEach(b=> b.addEventListener('click', async ()=>{
+    const item = S.sched.find(x=>x.id===b.dataset.id);
+    if(!item) return;
+    const prev = [...S.sched];
+    S.sched=S.sched.filter(x=>x.id!==b.dataset.id);
+    try{
+      if(apiOnline && item.backendType === 'focusBlock') await apiFetch(`/planner/focus-blocks/${item.rawId}`, {method:'DELETE'});
+      else save('sched');
+      renderSchedule();
+    }catch(e){ S.sched=prev; alert(e.message); renderSchedule(); }
+  }));
+}
+
+async function loadScheduleFromApi(date){
+  const box = document.getElementById('scheduleList');
+  try{
+    const blocks = await apiFetch(`/planner/focus-blocks?date=${date}`);
+    S.sched = S.sched.filter(item=>!(item.backendType === 'focusBlock' && item.date === date));
+    S.sched.push(...blocks.map(focusBlockFromApi));
+    renderSchedule();
+  }catch(e){
+    if(box) box.innerHTML = `<div class="empty">${esc(e.message)}</div>`;
+  }
+}
+
+/* ============ GOALS ============ */
+function renderGoals(){
+  setTopbar('Goals', 'Manage your yearly ambitions.');
+  const el = document.getElementById('view-goals');
+  el.innerHTML = `
+    <div class="card" style="margin-bottom:18px;">
+      <div class="card-head"><span class="card-title">Add a goal</span></div>
+      <div class="mini-add">
+        <select id="goalIconSel">
+          <option value="🎯">🎯 Target</option><option value="❤️">❤️ Health</option><option value="💰">💰 Money</option>
+          <option value="📚">📚 Learning</option><option value="🏡">🏡 Home</option><option value="✈️">✈️ Travel</option>
+        </select>
+        <select id="goalColorSel">
+          <option value="blue">Blue</option><option value="pink">Pink</option><option value="green">Green</option><option value="purple">Purple</option><option value="amber">Amber</option>
+        </select>
+        <input type="text" id="goalTitleInput" placeholder="Goal title…" maxlength="60" />
+        <button id="goalAddBtn">${ICON.plus}</button>
+      </div>
+    </div>
+    <div class="grid grid-3" id="goalsGrid" style="margin-bottom:18px;"></div>
+    <div class="card" id="roadmapPanel"></div>
+  `;
+  renderGoalsGrid();
+  document.getElementById('goalAddBtn').onclick=async ()=>{
+    const title=document.getElementById('goalTitleInput').value.trim(); if(!title) return;
+    try{
+      if(apiOnline){
+        const created = await apiFetch('/goals', {method:'POST', body:JSON.stringify({title, timeframe:'annual', lifeArea:'career'})});
+        S.goals.push(goalFromApi(created));
+      }else{
+        S.goals.push({id:uid(), title, icon:document.getElementById('goalIconSel').value, color:document.getElementById('goalColorSel').value, progress:0});
+        save('goals');
+      }
+      document.getElementById('goalTitleInput').value=''; renderGoalsGrid();
+    }catch(e){ alert(e.message); }
+  };
+}
+function renderGoalsGrid(){
+  document.getElementById('goalsGrid').innerHTML = S.goals.map(g=>{
+    const [fg,bgc]=GOAL_COLORS[g.color]||GOAL_COLORS.blue;
+    const roadmap = g.roadmap || {milestones:0, weeklyFocuses:0, tasks:0, nextFocus:null};
+    return `<div class="goal-card">
+      <button class="goal-del" data-del="${g.id}">${ICON.x}</button>
+      <div class="goal-icon" style="background:${bgc};">${g.icon}</div>
+      <div class="goal-title">${esc(g.title)}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${g.progress}%;background:${fg};"></div></div>
+      <div class="bar-row"><span class="bar-pct">${g.progress}%</span>
+        <div class="stepper" style="opacity:1;"><button class="step-btn" data-g="${g.id}" data-d="-10">−</button><button class="step-btn" data-g="${g.id}" data-d="10">+</button></div>
+      </div>
+      <div class="roadmap-meta">
+        <div class="roadmap-pill"><strong>${roadmap.milestones}</strong><span>Milestones</span></div>
+        <div class="roadmap-pill"><strong>${roadmap.weeklyFocuses}</strong><span>Weeks</span></div>
+        <div class="roadmap-pill"><strong>${roadmap.tasks}</strong><span>Tasks</span></div>
+      </div>
+      <div class="date-sub" style="margin-top:9px;">${roadmap.nextFocus ? esc(roadmap.nextFocus.title) : 'No roadmap yet'}</div>
+      <div class="goal-actions">
+        <button class="link-btn" data-roadmap="${g.id}">Roadmap</button>
+        <button class="link-btn" data-primary="true" data-generate-roadmap="${g.id}">${roadmap.milestones ? 'Regenerate' : 'Generate'}</button>
+      </div>
+    </div>`;
+  }).join('') || '<div class="empty">No goals yet — add your first above.</div>';
+  renderRoadmapPanel();
+  document.querySelectorAll('[data-g]').forEach(b=> b.addEventListener('click', async ()=>{
+    const g=S.goals.find(x=>x.id===b.dataset.g); if(!g) return;
+    const old = g.progress;
+    g.progress=Math.max(0,Math.min(100,g.progress+Number(b.dataset.d)));
+    try{
+      if(apiOnline) await apiFetch(`/goals/${g.id}/progress`, {method:'PATCH', body:JSON.stringify({progress:g.progress})});
+      else save('goals');
+      renderGoalsGrid();
+    }catch(e){ g.progress=old; alert(e.message); }
+  }));
+  document.querySelectorAll('[data-del]').forEach(b=> b.addEventListener('click', async ()=>{
+    const id = b.dataset.del;
+    const prev = [...S.goals];
+    S.goals=S.goals.filter(x=>x.id!==id);
+    if(selectedRoadmapGoalId===id) selectedRoadmapGoalId = null;
+    try{
+      if(apiOnline) await apiFetch(`/goals/${id}`, {method:'DELETE'});
+      else save('goals');
+      renderGoalsGrid();
+    }catch(e){ S.goals=prev; alert(e.message); }
+  }));
+  document.querySelectorAll('[data-roadmap]').forEach(b=> b.addEventListener('click', ()=>{
+    selectedRoadmapGoalId = b.dataset.roadmap;
+    renderGoalsGrid();
+  }));
+  document.querySelectorAll('[data-generate-roadmap]').forEach(b=> b.addEventListener('click', async ()=>{
+    const id = b.dataset.generateRoadmap;
+    const goal = S.goals.find(x=>x.id===id);
+    if(!goal) return;
+    if(!apiOnline){
+      alert('Connect to the backend to generate a roadmap.');
+      return;
+    }
+    if(goal.roadmap && goal.roadmap.milestones && !confirm('This goal already has a roadmap. Generate another starter roadmap?')) return;
+    try{
+      b.textContent = 'Generating...';
+      await apiFetch(`/goals/${id}/roadmap/generate`, {
+        method:'POST',
+        body:JSON.stringify({startDate:todayStr(), months:1, weeksPerMilestone:2, tasksPerWeek:2}),
+      });
+      selectedRoadmapGoalId = id;
+      await refreshFromApi();
+      renderGoals();
+    }catch(e){
+      alert(e.message);
+      renderGoalsGrid();
+    }
+  }));
+}
+
+function renderRoadmapPanel(){
+  const panel = document.getElementById('roadmapPanel');
+  if(!panel) return;
+  const goal = S.goals.find(x=>x.id===selectedRoadmapGoalId) || S.goals.find(x=>x.roadmap && x.roadmap.milestones);
+  if(!goal){
+    panel.innerHTML = '<div class="empty">Select a goal to view its roadmap.</div>';
+    return;
+  }
+  selectedRoadmapGoalId = goal.id;
+  const milestones = goal.backend && goal.backend.milestones ? goal.backend.milestones : [];
+  if(!milestones.length){
+    panel.innerHTML = `
+      <div class="card-head"><span class="card-title">${esc(goal.title)} roadmap</span></div>
+      <div class="empty">No roadmap generated for this goal yet.</div>`;
+    return;
+  }
+  panel.innerHTML = `
+    <div class="card-head">
+      <span class="card-title">${esc(goal.title)} roadmap</span>
+      <span class="bar-pct">${goal.roadmap.milestones} milestones · ${goal.roadmap.weeklyFocuses} weeks · ${goal.roadmap.tasks} tasks</span>
+    </div>
+    <div class="roadmap-panel">
+      ${milestones.map(milestone=>`
+        <div class="roadmap-item">
+          <div class="bar-row" style="margin-top:0;">
+            <div>
+              <div class="goal-title" style="margin-bottom:3px;">${esc(milestone.title)}</div>
+              <div class="date-sub">${esc(milestone.targetMonth || '')}${milestone.dueDate ? ` · due ${esc(milestone.dueDate.slice(0,10))}` : ''}</div>
+            </div>
+            <span class="bar-pct">${milestone.progress || 0}%</span>
+          </div>
+          <div class="bar-track"><div class="bar-fill" style="width:${milestone.progress || 0}%;background:var(--primary);"></div></div>
+          ${(milestone.weeklyFocuses || []).map(week=>`
+            <div class="roadmap-week">
+              <div class="bar-row" style="margin-top:0;">
+                <div class="date-title">${esc(week.title)}</div>
+                <div class="date-sub">${esc(week.weekStart.slice(0,10))}</div>
+              </div>
+              ${(week.tasks || []).slice(0,4).map(task=>`
+                <div class="roadmap-task">
+                  <span class="roadmap-task-dot"></span>
+                  <span>${esc(task.title)}</span>
+                </div>`).join('')}
+            </div>`).join('')}
+        </div>`).join('')}
+    </div>`;
+}
+
+/* ============ HABITS ============ */
+function renderHabits(){
+  setTopbar('Habits', 'Track your daily rituals, one week at a time.', `
+    <div class="date-nav">
+      <button class="icon-btn" id="hPrev">${ICON.chevLeft}</button>
+      <span class="date-nav-label" style="min-width:140px;">${habitWeekStart.toLocaleDateString(undefined,{month:'short',day:'numeric'})} – ${addDays(habitWeekStart,6).toLocaleDateString(undefined,{month:'short',day:'numeric'})}</span>
+      <button class="icon-btn" id="hNext">${ICON.chevRight}</button>
+    </div>`);
+  document.getElementById('hPrev').onclick=()=>{ habitWeekStart=addDays(habitWeekStart,-7); renderHabits(); };
+  document.getElementById('hNext').onclick=()=>{ habitWeekStart=addDays(habitWeekStart,7); renderHabits(); };
+
+  const el = document.getElementById('view-habits');
+  const days = [0,1,2,3,4,5,6].map(i=>addDays(habitWeekStart,i));
+  el.innerHTML = `
+    <div class="card" style="margin-bottom:18px;">
+      <div class="card-head"><span class="card-title">Weekly tracker</span></div>
+      <table class="habit-table"><thead><tr><th style="text-align:left;">Habit</th>${days.map(d=>`<th>${WEEKDAYS[(d.getDay()+6)%7]}<br>${d.getDate()}</th>`).join('')}<th></th></tr></thead>
+      <tbody id="habitBody"></tbody></table>
+    </div>
+    <div class="card" style="margin-bottom:18px;">
+      <div class="card-head"><span class="card-title">Habit Intelligence</span><span class="bar-pct">${apiCurrentPlan ? apiCurrentPlan.name.toUpperCase() : 'OFFLINE'}</span></div>
+      <div id="habitInsights"></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><span class="card-title">Add a habit</span></div>
+      <div class="mini-add">
+        <select id="habitIconSel"><option value="🏋️">🏋️ Workout</option><option value="🧘">🧘 Meditate</option><option value="📖">📖 Read</option><option value="💧">💧 Water</option><option value="🍬">🍬 No Sugar</option><option value="🛌">🛌 Sleep</option></select>
+        <select id="habitColorSel"><option value="var(--green)">Green</option><option value="var(--blue)">Blue</option><option value="var(--purple)">Purple</option><option value="var(--pink)">Pink</option><option value="var(--amber)">Amber</option></select>
+        <input type="text" id="habitNameInput" placeholder="Habit name…" maxlength="40" />
+        <button id="habitAddBtn">${ICON.plus}</button>
+      </div>
+    </div>
+  `;
+  renderHabitInsights();
+  const body = document.getElementById('habitBody');
+  body.innerHTML = S.habits.map(h=>`
+    <tr>
+      <td><div class="habit-name-cell"><span class="habit-emoji" style="background:color-mix(in srgb, ${h.color} 16%, white);">${h.icon}</span>${esc(h.name)}</div></td>
+      ${days.map(d=>{ const ds=fmt(d); return `<td><button class="habit-dot" data-h="${h.id}" data-date="${ds}" data-done="${!!h.completions[ds]}"></button></td>`; }).join('')}
+      <td><button class="habit-del" data-del="${h.id}">${ICON.x}</button></td>
+    </tr>`).join('') || `<tr><td colspan="9"><div class="empty">No habits yet — add one below.</div></td></tr>`;
+  body.querySelectorAll('.habit-dot').forEach(b=> b.addEventListener('click', async ()=>{
+    const h=S.habits.find(x=>x.id===b.dataset.h); const ds=b.dataset.date;
+    if(!h) return;
+    const next = !h.completions[ds];
+    if(next) h.completions[ds]=true; else delete h.completions[ds];
+    try{
+      if(apiOnline) await apiFetch(`/habits/${h.id}/logs`, {method:'POST', body:JSON.stringify({date:ds, completed:next})});
+      else save('habits');
+      renderHabits();
+    }catch(e){
+      if(next) delete h.completions[ds]; else h.completions[ds]=true;
+      alert(e.message);
+    }
+  }));
+  body.querySelectorAll('[data-del]').forEach(b=> b.addEventListener('click', async ()=>{
+    const id = b.dataset.del;
+    const prev = [...S.habits];
+    S.habits=S.habits.filter(x=>x.id!==id);
+    try{
+      if(apiOnline) await apiFetch(`/habits/${id}`, {method:'DELETE'});
+      else save('habits');
+      renderHabits();
+    }catch(e){ S.habits=prev; alert(e.message); }
+  }));
+  document.getElementById('habitAddBtn').onclick=async ()=>{
+    const name=document.getElementById('habitNameInput').value.trim(); if(!name) return;
+    try{
+      if(apiOnline){
+        const created = await apiFetch('/habits', {method:'POST', body:JSON.stringify({title:name, frequency:'daily', lifeArea:'personal_growth'})});
+        S.habits.push(habitFromApi(created));
+      }else{
+        S.habits.push({id:uid(), name, icon:document.getElementById('habitIconSel').value, color:document.getElementById('habitColorSel').value, completions:{}});
+        save('habits');
+      }
+      document.getElementById('habitNameInput').value=''; renderHabits();
+    }catch(e){ alert(e.message); }
+  };
+}
+
+function renderHabitInsights(){
+  const box = document.getElementById('habitInsights');
+  if(!box) return;
+  if(!apiOnline){
+    box.innerHTML = '<div class="empty">Connect to the backend to see habit intelligence.</div>';
+    return;
+  }
+  if(!apiHabitInsights){
+    box.innerHTML = '<div class="empty">Premium analytics are available on the Premium plan.</div>';
+    return;
+  }
+  const totals = apiHabitInsights.totals || {};
+  const pattern = apiHabitInsights.moodPattern || {};
+  const topStreaks = (apiHabitInsights.habitStreaks || []).slice(0,3);
+  box.innerHTML = `
+    <div class="grid grid-3" style="gap:10px;margin-bottom:14px;">
+      <div><div class="stat-num">${totals.completionRate || 0}%</div><div class="stat-label">Completion</div></div>
+      <div><div class="stat-num">${totals.moodAverage || '-'}</div><div class="stat-label">Mood avg</div></div>
+      <div><div class="stat-num">${pattern.difference === null || pattern.difference === undefined ? '-' : pattern.difference}</div><div class="stat-label">Mood lift</div></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:${topStreaks.length ? '12px' : '0'};">
+      ${(apiHabitInsights.insights || []).map(item=>`<div class="date-sub">${esc(item)}</div>`).join('')}
+    </div>
+    ${topStreaks.length ? `<div class="mini-icon-row">
+      ${topStreaks.map(h=>`<div class="mini-icon"><div class="mini-icon-circle" style="background:var(--primary-soft);">${h.currentStreak}</div><div class="mini-icon-pct">${h.completionRate}%</div><div class="mini-icon-name">${esc(h.title)}</div></div>`).join('')}
+    </div>` : ''}
+  `;
+}
+
+/* ============ FINANCES ============ */
+async function renderFinances(){
+  setTopbar('Finances', `Budget for ${MONTH_FULL[monthCursor.getMonth()]} ${monthCursor.getFullYear()}.`, `
+    <div class="date-nav">
+      <button class="icon-btn" id="fPrev">${ICON.chevLeft}</button>
+      <span class="date-nav-label">${MONTH_NAMES[monthCursor.getMonth()]} ${monthCursor.getFullYear()}</span>
+      <button class="icon-btn" id="fNext">${ICON.chevRight}</button>
+    </div>`);
+  document.getElementById('fPrev').onclick=()=>{ monthCursor.setMonth(monthCursor.getMonth()-1); renderFinances(); };
+  document.getElementById('fNext').onclick=()=>{ monthCursor.setMonth(monthCursor.getMonth()+1); renderFinances(); };
+
+  const key = ym(monthCursor);
+  if(apiOnline && (!S.budget[key] || !S.budget[key].backend)) await loadBudgetFromApi(key);
+  if(!S.budget[key]) S.budget[key] = {total:0, expenses:[]};
+  const b = S.budget[key];
+  const spent = b.expenses.reduce((a,e)=>a+Number(e.amount),0);
+  const pct = b.total>0 ? Math.min(100, Math.round(spent/b.total*100)) : 0;
+
+  const el = document.getElementById('view-finances');
+  el.innerHTML = `
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-head"><span class="card-title">Monthly budget</span></div>
+        <div class="mini-add" style="margin-bottom:14px;"><input type="number" id="budgetTotalInput" placeholder="Total budget" value="${b.total||''}" min="0" /><button id="budgetSaveBtn">Set</button></div>
+        <div class="budget-amt">$${spent.toLocaleString()}</div>
+        <div class="budget-of">of $${Number(b.total).toLocaleString()} spent</div>
+        <div class="bar-track" style="margin-top:10px;"><div class="bar-fill" style="width:${pct}%;background:${pct>90?'var(--red)':'var(--primary)'};"></div></div>
+        <div class="bar-pct" style="margin-top:6px;">${pct}%</div>
+      </div>
+      <div class="card">
+        <div class="card-head"><span class="card-title">Expenses</span></div>
+        <div id="expenseList" style="margin-bottom:12px;"></div>
+        <div class="mini-add"><input type="text" id="expNameInput" placeholder="Expense name" maxlength="40" /><input type="number" id="expAmtInput" placeholder="$" min="0" style="flex:0 0 90px;" /><button id="expAddBtn">${ICON.plus}</button></div>
+      </div>
+    </div>
+  `;
+  renderExpenseList();
+  document.getElementById('budgetSaveBtn').onclick=async ()=>{
+    const old = b.total;
+    b.total = Number(document.getElementById('budgetTotalInput').value)||0;
+    try{
+      if(apiOnline){
+        const updated = await apiFetch('/personal/budget', {method:'PUT', body:JSON.stringify({month:key, total:b.total})});
+        S.budget[key] = budgetFromApi(updated);
+      }else{
+        save('budget');
+      }
+      renderFinances();
+    }catch(e){ b.total = old; alert(e.message); renderFinances(); }
+  };
+  document.getElementById('expAddBtn').onclick=async ()=>{
+    const name=document.getElementById('expNameInput').value.trim(); const amt=Number(document.getElementById('expAmtInput').value);
+    if(!name || !amt) return;
+    try{
+      if(apiOnline){
+        const created = await apiFetch('/personal/budget/expenses', {method:'POST', body:JSON.stringify({month:key, name, amount:amt})});
+        b.expenses.unshift({id:String(created.id), name:created.name, amount:Number(created.amount), backendType:'expense', backend:created});
+      }else{
+        b.expenses.push({id:uid(), name, amount:amt}); save('budget');
+      }
+      document.getElementById('expNameInput').value=''; document.getElementById('expAmtInput').value='';
+      renderFinances();
+    }catch(e){ alert(e.message); }
+  };
+}
+
+async function loadBudgetFromApi(month){
+  try{
+    const budget = await apiFetch(`/personal/budget?month=${month}`);
+    S.budget[month] = budgetFromApi(budget);
+  }catch(e){
+    if(!S.budget[month]) S.budget[month] = {total:0, expenses:[]};
+    console.warn('Budget load failed:', e.message);
+  }
+}
+
+function renderExpenseList(){
+  const key = ym(monthCursor); const b = S.budget[key];
+  const box = document.getElementById('expenseList');
+  box.innerHTML = b.expenses.length ? b.expenses.map(e=>`
+    <div class="expense-row"><span>${esc(e.name)}</span><span style="display:flex;align-items:center;gap:8px;">$${Number(e.amount).toLocaleString()}<button class="expense-del" data-id="${e.id}">${ICON.x}</button></span></div>
+  `).join('') : '<div class="empty">No expenses logged yet.</div>';
+  box.querySelectorAll('[data-id]').forEach(btn=> btn.addEventListener('click', async ()=>{
+    const id = btn.dataset.id;
+    const item = b.expenses.find(x=>x.id===id);
+    const prev = [...b.expenses];
+    b.expenses=b.expenses.filter(x=>x.id!==id);
+    try{
+      if(apiOnline && item && item.backendType === 'expense') await apiFetch(`/personal/budget/expenses/${id}`, {method:'DELETE'});
+      else save('budget');
+      renderExpenseList(); renderFinances();
+    }catch(e){ b.expenses = prev; alert(e.message); renderExpenseList(); renderFinances(); }
+  }));
+}
+
+/* ============ NOTES ============ */
+function renderNotes(){
+  setTopbar('Notes', 'Freeform notes, ideas, and things to remember.');
+  const el = document.getElementById('view-notes');
+  el.innerHTML = `
+    <div class="card" style="margin-bottom:18px;">
+      <div class="mini-add"><input type="text" id="noteInput" placeholder="Write a note…" maxlength="200" /><button id="noteAddBtn">${ICON.plus}</button></div>
+    </div>
+    <div class="grid grid-3" id="notesGrid"></div>
+  `;
+  renderNotesGrid();
+  document.getElementById('noteAddBtn').onclick=async ()=>{
+    const inp=document.getElementById('noteInput'); const text=inp.value.trim(); if(!text) return;
+    try{
+      if(apiOnline){
+        const created = await apiFetch('/personal/notes', {method:'POST', body:JSON.stringify({text})});
+        S.notes.unshift(noteFromApi(created));
+      }else{
+        S.notes.unshift({id:uid(), text, createdAt:Date.now()}); save('notes');
+      }
+      inp.value=''; renderNotesGrid();
+    }catch(e){ alert(e.message); }
+  };
+}
+function renderNotesGrid(){
+  const items = S.notes.filter(n=>!n.month);
+  document.getElementById('notesGrid').innerHTML = items.length ? items.map(n=>`
+    <div class="note-card">
+      <button class="note-del" data-id="${n.id}">${ICON.x}</button>
+      <div class="note-txt">${esc(n.text)}</div>
+      <div class="note-meta">${new Date(n.createdAt).toLocaleDateString(undefined,{month:'short',day:'numeric'})}</div>
+    </div>`).join('') : '<div class="empty">No notes yet — write your first above.</div>';
+  document.querySelectorAll('#notesGrid [data-id]').forEach(b=> b.addEventListener('click', async ()=>{
+    const id = b.dataset.id;
+    const item = S.notes.find(x=>x.id===id);
+    const prev = [...S.notes];
+    S.notes=S.notes.filter(x=>x.id!==id);
+    try{
+      if(apiOnline && item && item.backendType === 'note') await apiFetch(`/personal/notes/${id}`, {method:'DELETE'});
+      else save('notes');
+      renderNotesGrid();
+    }catch(e){ S.notes=prev; alert(e.message); renderNotesGrid(); }
+  }));
+}
+
+/* ============ TEMPLATES (placeholder) ============ */
+async function renderTemplates(){
+  setTopbar('Templates', 'Ready-made layouts to jump-start your planning.');
+  const el = document.getElementById('view-templates');
+  el.innerHTML = `<div class="card"><div class="empty">Loading templates...</div></div>`;
+  if(!apiOnline){
+    el.innerHTML = `<div class="card"><div class="empty">Connect to the backend to use starter templates.</div></div>`;
+    return;
+  }
+  try{
+    const [templates, plans] = await Promise.all([
+      apiFetch('/templates/starter'),
+      apiPlans.length ? Promise.resolve(apiPlans) : apiFetch('/plans').catch(()=>[]),
+    ]);
+    apiPlans = plans || [];
+    const billingReady = Boolean(apiBilling && apiBilling.checkoutEnabled);
+    const portalReady = Boolean(apiBilling && apiBilling.portalEnabled && apiBilling.user && apiBilling.user.stripeCustomerId);
+    const canCheckoutPlan = plan => billingReady && plan.name !== 'free' && apiBilling.prices && apiBilling.prices[plan.name];
+    const planButtonAttrs = plan => {
+      if(apiCurrentPlan && apiCurrentPlan.name === plan.name){
+        return portalReady ? 'data-portal="true"' : '';
+      }
+      if(apiCanSwitchPlans) return `data-plan="${plan.name}"`;
+      if(canCheckoutPlan(plan)) return `data-checkout="${plan.name}"`;
+      return '';
+    };
+    const planButtonLabel = plan => {
+      if(apiCurrentPlan && apiCurrentPlan.name === plan.name) return portalReady ? 'Manage billing' : 'Current plan';
+      if(apiCanSwitchPlans) return 'Use plan';
+      if(canCheckoutPlan(plan)) return `Subscribe to ${plan.name.toUpperCase()}`;
+      return 'Billing required';
+    };
+    el.innerHTML = `
+      <div class="card" style="margin-bottom:18px;">
+        <div class="card-head"><span class="card-title">Plans</span><span class="bar-pct">${apiCurrentPlan ? apiCurrentPlan.name.toUpperCase() : 'LOCAL'}</span></div>
+        <div class="grid grid-3">
+          ${apiPlans.map(plan=>`
+            <div class="goal-card">
+              <div class="goal-icon" style="background:${plan.name==='free'?'var(--blue-soft)':plan.name==='pro'?'var(--green-soft)':'var(--purple-soft)'};">${plan.name==='free'?'F':plan.name==='pro'?'P':'★'}</div>
+              <div class="goal-title">${esc(plan.name.toUpperCase())}</div>
+              <div class="roadmap-meta">
+                <div class="roadmap-pill"><strong>${plan.limits.tasks === null ? '∞' : plan.limits.tasks}</strong><span>Tasks</span></div>
+                <div class="roadmap-pill"><strong>${plan.limits.goals === null ? '∞' : plan.limits.goals}</strong><span>Goals</span></div>
+                <div class="roadmap-pill"><strong>${plan.limits.habits === null ? '∞' : plan.limits.habits}</strong><span>Habits</span></div>
+              </div>
+              <div class="plan-feature-list">
+                ${plan.features.slice(0,6).map(feature=>`<div>${esc(feature.replace(/_/g,' '))}</div>`).join('')}
+              </div>
+              <button class="link-btn" data-primary="true" ${planButtonAttrs(plan)}>${planButtonLabel(plan)}</button>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+      <div class="grid grid-2" id="templatesGrid">
+        ${templates.map(t=>`
+          <div class="goal-card">
+            <div class="goal-icon" style="background:var(--primary-soft);">${ICON.templates}</div>
+            <div class="goal-title">${esc(t.mode.replace(/_/g,' '))}</div>
+            <div class="bar-pct" style="margin-bottom:10px;">${t.goals.length} goals · ${t.habits.length} habits · ${t.tasks.length} tasks</div>
+            <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px;">
+              ${t.tasks.slice(0,2).map(task=>`<div class="date-sub">${esc(task.title)}</div>`).join('')}
+            </div>
+            <button class="link-btn" data-primary="true" data-template="${t.mode}">Apply template</button>
+          </div>
+        `).join('')}
+      </div>`;
+    el.querySelectorAll('[data-plan]').forEach(btn=>btn.addEventListener('click', async ()=>{
+      const plan = btn.dataset.plan;
+      if(apiCurrentPlan && apiCurrentPlan.name === plan) return;
+      try{
+        btn.textContent = 'Switching...';
+        const result = await apiFetch('/plans/me', {method:'PATCH', body:JSON.stringify({plan})});
+        apiCurrentPlan = result.plan;
+        renderProfile();
+        renderTemplates();
+      }catch(e){ alert(e.message); renderTemplates(); }
+    }));
+    el.querySelectorAll('[data-checkout]').forEach(btn=>btn.addEventListener('click', async ()=>{
+      const plan = btn.dataset.checkout;
+      try{
+        btn.textContent = 'Opening checkout...';
+        const result = await apiFetch('/billing/checkout', {method:'POST', body:JSON.stringify({plan})});
+        if(!result.url) throw new Error('Stripe did not return a checkout URL');
+        window.location.href = result.url;
+      }catch(e){ alert(e.message); renderTemplates(); }
+    }));
+    el.querySelectorAll('[data-portal]').forEach(btn=>btn.addEventListener('click', async ()=>{
+      try{
+        btn.textContent = 'Opening billing...';
+        const result = await apiFetch('/billing/portal', {method:'POST'});
+        if(!result.url) throw new Error('Stripe did not return a portal URL');
+        window.location.href = result.url;
+      }catch(e){ alert(e.message); renderTemplates(); }
+    }));
+    el.querySelectorAll('[data-template]').forEach(btn=>btn.addEventListener('click', async ()=>{
+      try{
+        const mode = btn.dataset.template;
+        btn.textContent = 'Applying...';
+        await apiFetch('/profile', {method:'PATCH', body:JSON.stringify({mode})});
+        await apiFetch(`/templates/starter/${mode}/apply`, {method:'POST'});
+        await refreshFromApi();
+        view = 'home';
+        renderView();
+      }catch(e){ alert(e.message); renderTemplates(); }
+    }));
+  }catch(e){
+    el.innerHTML = `<div class="card"><div class="empty">${esc(e.message)}</div></div>`;
+  }
+}
+
+loadAll();
+</script>
+</body>
+</html>
